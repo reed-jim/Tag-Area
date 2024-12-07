@@ -116,9 +116,10 @@ GameObject:
   - component: {fileID: 1545265395285993562}
   - component: {fileID: 1075313922824477065}
   - component: {fileID: 8817911407752511319}
+  - component: {fileID: 1364816200474424897}
+  - component: {fileID: 4463865429473566599}
   - component: {fileID: 7978443151567818338}
   - component: {fileID: 3648413447474782922}
-  - component: {fileID: 1364816200474424897}
   - component: {fileID: 6837749863522724310}
   - component: {fileID: 4496272124514351923}
   - component: {fileID: 3584853939254418322}
@@ -158,7 +159,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 149501491
+  GlobalObjectIdHash: 1841458843
   InScenePlacedSourceGlobalObjectIdHash: 149501491
   DeferredDespawnTick: 0
   Ownership: 1
@@ -228,6 +229,35 @@ MonoBehaviour:
   colorReference: _Color
   transitionDuration: 0.5
   _renderer: {fileID: 4496272124514351923}
+--- !u!114 &1364816200474424897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146442563205983887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d432d019bde77d54092c892afaaf0d2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  moveSpeed: 2
+--- !u!114 &4463865429473566599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146442563205983887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ffe025ed860d0c428178a8e98af2a58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  characterFactionObserver: {fileID: 1108822657105720325}
+  maxTime: 120
 --- !u!114 &7978443151567818338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,20 +311,6 @@ MonoBehaviour:
   UseRigidBodyForMotion: 0
   AutoUpdateKinematicState: 1
   AutoSetKinematicOnDespawn: 1
---- !u!114 &1364816200474424897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6146442563205983887}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d432d019bde77d54092c892afaaf0d2e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
-  moveSpeed: 2
 --- !u!33 &6837749863522724310
 MeshFilter:
   m_ObjectHideFlags: 0
