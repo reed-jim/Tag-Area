@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class FollowCharacterCamera : MonoBehaviour
 {
-    private Transform _character;
+    [SerializeField] private Transform _character;
 
     [Header("CUSTOMIZE")]
     [SerializeField, Range(0, 1)] private float lerpRatio;
@@ -13,12 +13,12 @@ public class FollowCharacterCamera : MonoBehaviour
 
     private void Awake()
     {
-        LevelSpawner.cameraFollowCharacterEvent += AssignCharacterToFollow;
+        CharacterCameraBinder.bindCameraEvent += AssignCharacterToFollow;
     }
 
     private void OnDestroy()
     {
-        LevelSpawner.cameraFollowCharacterEvent -= AssignCharacterToFollow;
+        CharacterCameraBinder.bindCameraEvent -= AssignCharacterToFollow;
     }
 
     private void LateUpdate()
