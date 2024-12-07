@@ -1,52 +1,197 @@
 using System;
-using Unity.Netcode;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Saferio.Util.SaferioTween;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
-using UnityEngine.AddressableAssets;
-using UnityEngine.UI;
+using static GameEnum;
 
 public class LobbyManager : MonoBehaviour
 {
-    [SerializeField] private Button joinGameButton;
+    #region PRIVATE FIELD
+    private Lobby _currentLobby;
+    private string _currentLobbyId;
+    #endregion
 
     #region ACTION
-    public static event Action<string> toSceneEvent;
+    public static event Action<int, string> updateLobbyRoomItemEvent;
+    public static event Action<string> setLobbyId;
+    public static event Action<string> switchRoute;
+    public static event Action<string> startGameEvent;
     #endregion
 
     private void Awake()
     {
-        NetworkManager.Singleton.OnClientStarted += ToGameplayScene;
+        LobbyRoomUI.joinLobbyEvent += JoinLobbyByIdAsync;
+        LobbyScreen.refreshLobbyListEvent += QueryLobbyAsync;
+        LobbyManagerUsingRelay.setJoinCodeEvent += sendJoinCodeAcrossLobby;
 
-        joinGameButton.onClick.AddListener(JoinGame);
+        Init();
+
+        SaferioTween.DelayAsync(1, onCompletedAction: () => QueryLobbyAsync());
     }
 
-    private void JoinGame()
+    private void OnDestroy()
     {
-        Debug.Log(NetworkManager.Singleton.ConnectedHostname);
-        Debug.Log(NetworkManager.Singleton.ConnectedClientsList.Count);
-        Debug.Log(NetworkManager.Singleton.IsClient);
+        LobbyRoomUI.joinLobbyEvent -= JoinLobbyByIdAsync;
+        LobbyScreen.refreshLobbyListEvent -= QueryLobbyAsync;
+        LobbyManagerUsingRelay.setJoinCodeEvent -= sendJoinCodeAcrossLobby;
+    }
 
-        if (NetworkManager.Singleton.ConnectedClients.Count == 0)
+    public string GenerateString(int length = 10, string chars = "abcdefghijklmnopqrstuvwxyz")
+    {
+        char[] stringChars = new char[length];
+        System.Random random = new System.Random();
+
+        for (int i = 0; i < length; i++)
         {
-            JoinHost();
+            int index = random.Next(chars.Length);
+            stringChars[i] = chars[index];
         }
-        else
+
+        return new string(stringChars);
+    }
+
+    private async void Init()
+    {
+        await InitializeLobbyAPI();
+
+        Authenticate();
+    }
+
+    private async Task InitializeLobbyAPI()
+    {
+        await UnityServices.InitializeAsync();
+    }
+
+    private async void Authenticate()
+    {
+        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+    }
+
+    public async void CreatePublicLobbyAsync()
+    {
+        if (UnityServices.State != ServicesInitializationState.Initialized || !AuthenticationService.Instance.IsAuthorized)
         {
-            JoinClient();
+            return;
+        }
+
+        string lobbyName = GenerateString();
+        int maxPlayers = 4;
+
+        CreateLobbyOptions options = new CreateLobbyOptions();
+
+        options.IsPrivate = false;
+        options.Data = new Dictionary<string, DataObject>();
+
+        _currentLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+
+        setLobbyId?.Invoke(_currentLobby.Id);
+
+        _currentLobbyId = _currentLobby.Id;
+
+        OnLobbyCreated();
+    }
+
+    private void OnLobbyCreated()
+    {
+        switchRoute?.Invoke(ScreenRoute.LobbyRoom.ToString());
+    }
+
+    private async void QueryLobbyAsync()
+    {
+        try
+        {
+            QueryLobbiesOptions options = new QueryLobbiesOptions();
+            options.Count = 25;
+
+            QueryResponse lobbies = await LobbyService.Instance.QueryLobbiesAsync(options);
+
+            for (int i = 0; i < lobbies.Results.Count; i++)
+            {
+                updateLobbyRoomItemEvent?.Invoke(i, lobbies.Results[i].Id);
+            }
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
         }
     }
 
-    private void JoinHost()
+    private async void JoinLobbyByIdAsync(string lobbyId, string joinCode)
     {
-        NetworkManager.Singleton.StartHost();
+        try
+        {
+            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
+
+            if (joinedLobby.Data != null)
+            {
+                joinCode = joinedLobby.Data["join_code"].Value;
+
+                startGameEvent?.Invoke(joinCode);
+            }
+
+            var callbacks = new LobbyEventCallbacks();
+
+            callbacks.DataChanged += HandleOnJoinCodeReceived;
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
     }
 
-    private void JoinClient()
+    private async Task JoinLobbyByCodeAysnc(string lobbyCode)
     {
-        NetworkManager.Singleton.StartClient();
+        try
+        {
+            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
     }
 
-    private void ToGameplayScene()
+    private async Task UpdateLobbyAsync(Dictionary<string, DataObject> data)
     {
-        toSceneEvent?.Invoke(GameConstants.GAMEPLAY_SCENE);
+        var updateOptions = new UpdateLobbyOptions
+        {
+            Data = data
+        };
+
+        await LobbyService.Instance.UpdateLobbyAsync(_currentLobbyId, updateOptions);
+    }
+
+
+    private void HandleOnJoinCodeReceived(Dictionary<string, ChangedOrRemovedLobbyValue<DataObject>> data)
+    {
+        if (data.ContainsKey("join_code"))
+        {
+            string joinCode = data["join_code"].Value.Value;
+
+            Debug.Log(data["join_code"].Value);
+            Debug.Log(joinCode);
+
+            startGameEvent?.Invoke(joinCode);
+        }
+    }
+
+    private void sendJoinCodeAcrossLobby(string lobbyId, string joinCode)
+    {
+        Dictionary<string, DataObject> data = new Dictionary<string, DataObject>
+        {
+            {
+                "join_code",
+                new DataObject(
+                visibility: DataObject.VisibilityOptions.Public,
+                value: joinCode)
+            }
+        };
+
+        UpdateLobbyAsync(data);
     }
 }

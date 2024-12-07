@@ -6,14 +6,14 @@ public class NetworkSceneManager : NetworkBehaviour
 {
     private void Awake()
     {
-        LobbyManager.toSceneEvent += ToScene;
+        GameNetcodeManager.toSceneEvent += ToScene;
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
 
-        LobbyManager.toSceneEvent -= ToScene;
+        GameNetcodeManager.toSceneEvent -= ToScene;
     }
 
     private void ToScene(string sceneName)
