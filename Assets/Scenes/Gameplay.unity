@@ -718,6 +718,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _character: {fileID: 0}
+  offset: {x: 0, y: 0, z: 0}
   lerpRatio: 0.3
 --- !u!1 &410087039
 GameObject:
@@ -1779,7 +1780,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1158574763
 MonoBehaviour:
   m_ObjectHideFlags: 0

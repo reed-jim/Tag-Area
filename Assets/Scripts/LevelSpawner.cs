@@ -7,6 +7,10 @@ public class LevelSpawner : NetworkBehaviour
 {
     public GameObject playerPrefab;
 
+    #region PRIVATE FIELD
+    private int _numPlayerSpawned;
+    #endregion
+
     #region ACTION
     public static Action<ulong, int> spawnCharacterEvent;
     public static Action<Transform> cameraFollowCharacterEvent;
@@ -68,17 +72,17 @@ public class LevelSpawner : NetworkBehaviour
 
     private Vector3 GetSpawnPosition()
     {
-        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
+        _numPlayerSpawned++;
 
-        if (playerCount == 1)
+        if (_numPlayerSpawned == 1)
         {
             return new Vector3(-8, 1, 8);
         }
-        else if (playerCount == 2)
+        else if (_numPlayerSpawned == 2)
         {
             return new Vector3(8, 1, 8);
         }
-        else if (playerCount == 3)
+        else if (_numPlayerSpawned == 3)
         {
             return new Vector3(8, 1, -8);
         }

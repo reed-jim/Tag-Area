@@ -65,13 +65,11 @@ public class LobbyDetailScreen : UIScreen
         }
     }
 
-    private void UpdateNumberPlayerLobby(string lobbyId, int numberPlayerJoined)
+    private void UpdateNumberPlayerLobby(string lobbyId, int numPlayer)
     {
         if (lobbyId == _lobbyId)
         {
-            _numberPlayerInLobby += numberPlayerJoined;
-
-            numberPlayerText.text = $"<color=#78FF78>{_numberPlayerInLobby}/4 <color=#fff>Players Joined";
+            numberPlayerText.text = $"<color=#78FF78>{numPlayer}/4 <color=#fff>Players Joined";
         }
     }
 
