@@ -65,8 +65,6 @@ public class LobbyRoomScrollViewItem : MonoBehaviour, ISaferioScrollViewItem
             gameObject.SetActive(true);
         }
 
-        Debug.Log(index);
-
         string lobbyId = _lobbiesData[index].Id;
 
         lobbyIdText.text = lobbyId;

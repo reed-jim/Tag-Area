@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,9 +13,10 @@ public class LobbyDetailScreen : UIScreen
 
     private string _lobbyId;
     private string _joinCode;
+    private string _numberPlayerInLobby;
 
     #region ACTION
-    public static event Action<string> startGameForLobbyEvent;
+    public static event Action startGameEvent;
     #endregion
 
     protected override void RegisterMoreEvent()
@@ -22,6 +24,9 @@ public class LobbyDetailScreen : UIScreen
         base.RegisterMoreEvent();
 
         LobbyManager.setLobbyId += SetLobbyId;
+        LobbyManager.setJoinCodeEvent += SetJoinCode;
+        LobbyManager.updateNumberPlayerInLobbyEvent += UpdateNumberPlayerLobby;
+        LobbyManager.updateLobbyRoomEvent += UpdateLobby;
         LobbyManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
 
         startGameButton.onClick.AddListener(StartGame);
@@ -32,7 +37,15 @@ public class LobbyDetailScreen : UIScreen
         base.UnregisterMoreEvent();
 
         LobbyManager.setLobbyId -= SetLobbyId;
+        LobbyManager.setJoinCodeEvent -= SetJoinCode;
+        LobbyManager.updateNumberPlayerInLobbyEvent -= UpdateNumberPlayerLobby;
+        LobbyManager.updateLobbyRoomEvent -= UpdateLobby;
         LobbyManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
+    }
+
+    private void UpdateLobby(Lobby lobby)
+    {
+        UpdateNumberPlayerLobby(lobby.Id, lobby.Players.Count);
     }
 
     private void SetLobbyId(string lobbyId)
@@ -52,8 +65,18 @@ public class LobbyDetailScreen : UIScreen
         }
     }
 
+    private void UpdateNumberPlayerLobby(string lobbyId, int numberPlayerJoined)
+    {
+        if (lobbyId == _lobbyId)
+        {
+            _numberPlayerInLobby += numberPlayerJoined;
+
+            numberPlayerText.text = $"<color=#78FF78>{_numberPlayerInLobby}/4 <color=#fff>Players Joined";
+        }
+    }
+
     private void StartGame()
     {
-        startGameForLobbyEvent?.Invoke(_lobbyId);
+        startGameEvent?.Invoke();
     }
 }
