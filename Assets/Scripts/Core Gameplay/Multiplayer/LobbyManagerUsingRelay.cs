@@ -27,6 +27,8 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         // LobbyDetailScreen.startGameForLobbyEvent += StartHostWithRelay;
         // LobbyNetworkManager.startGameEvent += StartClientWithRelay;
 
+        LobbyManager.lobbyCreatedEvent += GenerateJoinCode;
+
         networkManager.OnServerStarted += OnHostStarted;
         networkManager.OnClientStarted += OnClientStarted;
 
@@ -37,6 +39,8 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
     {
         base.OnDestroy();
 
+        LobbyManager.lobbyCreatedEvent -= GenerateJoinCode;
+
         // LobbyDetailScreen.startGameForLobbyEvent -= StartHostWithRelay;
         // LobbyNetworkManager.startGameEvent -= StartClientWithRelay;
 
@@ -44,7 +48,7 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         networkManager.OnClientStarted -= OnClientStarted;
     }
 
-    public async void StartHostWithRelay(string lobbyId, int maxConnections = 5)
+    public async void GenerateJoinCode(string lobbyId, int maxConnections = 5)
     {
         await UnityServices.InitializeAsync();
 
@@ -62,6 +66,26 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         lobbyIdWithJoinCodeDictionary.Add(lobbyId, joinCode);
 
         setJoinCodeEvent?.Invoke(lobbyId, joinCode);
+    }
+
+    public async void StartHostWithRelay(string lobbyId, int maxConnections = 5)
+    {
+        // await UnityServices.InitializeAsync();
+
+        // if (!AuthenticationService.Instance.IsSignedIn)
+        // {
+        //     await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        // }
+
+        // Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
+
+        // networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "dtls"));
+
+        // string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+
+        // lobbyIdWithJoinCodeDictionary.Add(lobbyId, joinCode);
+
+        // setJoinCodeEvent?.Invoke(lobbyId, joinCode);
 
         networkManager.StartHost();
     }

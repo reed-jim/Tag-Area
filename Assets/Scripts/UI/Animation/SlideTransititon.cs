@@ -27,12 +27,12 @@ public class SlideTransition : MonoBehaviour, ISaferioUIAnimation
     {
         Tween.LocalPositionX(target, -canvasSize.Value.x, duration: duration).OnComplete(() =>
         {
-            target.gameObject.SetActive(true);
+            target.gameObject.SetActive(false);
         });
 
         // SaferioTween.LocalPositionAsync(target, new Vector2(-canvasSize.Value.x, 0), duration: duration, onCompletedAction: () =>
         // {
-        //     target.gameObject.SetActive(true);
+        //     target.gameObject.SetActive(false);
         // });
     }
 }

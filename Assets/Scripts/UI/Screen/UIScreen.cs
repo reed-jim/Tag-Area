@@ -13,6 +13,7 @@ public class UIScreen : MonoBehaviour
     {
         SwitchRouteButton.switchRouteEvent += OnRouteSwitched;
         WaitingScreen.switchRouteEvent += OnRouteSwitched;
+        LobbyManager.switchRouteEvent += OnRouteSwitched;
 
         RegisterMoreEvent();
 
@@ -34,6 +35,7 @@ public class UIScreen : MonoBehaviour
     {
         SwitchRouteButton.switchRouteEvent -= OnRouteSwitched;
         WaitingScreen.switchRouteEvent -= OnRouteSwitched;
+        LobbyManager.switchRouteEvent -= OnRouteSwitched;
 
         UnregisterMoreEvent();
     }

@@ -7,6 +7,7 @@ public class LobbyDetailScreen : UIScreen
 {
     [SerializeField] private TMP_Text lobbyIdText;
     [SerializeField] private TMP_Text joinCodeText;
+    [SerializeField] private TMP_Text numberPlayerText;
     [SerializeField] private Button startGameButton;
 
     private string _lobbyId;
@@ -20,7 +21,7 @@ public class LobbyDetailScreen : UIScreen
     {
         base.RegisterMoreEvent();
 
-        // LobbyNetworkManager.setLobbyId += SetLobbyId;
+        LobbyManager.setLobbyId += SetLobbyId;
         LobbyManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
 
         startGameButton.onClick.AddListener(StartGame);
@@ -30,7 +31,7 @@ public class LobbyDetailScreen : UIScreen
     {
         base.UnregisterMoreEvent();
 
-        // LobbyNetworkManager.setLobbyId -= SetLobbyId;
+        LobbyManager.setLobbyId -= SetLobbyId;
         LobbyManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
     }
 
