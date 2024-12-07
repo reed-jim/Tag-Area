@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ public class LevelSpawner : NetworkBehaviour
     public GameObject playerPrefab;
 
     #region ACTION
+    public static Action<ulong, int> spawnCharacterEvent;
     public static Action<Transform> cameraFollowCharacterEvent;
     #endregion
 
@@ -58,6 +60,8 @@ public class LevelSpawner : NetworkBehaviour
                 networkPlayerObject.ChangeOwnership(clientId);
 
                 cameraFollowCharacterEvent?.Invoke(playerObject.transform);
+
+                SyncSpawnCharacterEventRpc(networkPlayerObject.NetworkObjectId);
             }
         }
     }
@@ -68,19 +72,28 @@ public class LevelSpawner : NetworkBehaviour
 
         if (playerCount == 1)
         {
-            return new Vector3(-8, 0, 8);
+            return new Vector3(-8, 1, 8);
         }
         else if (playerCount == 2)
         {
-            return new Vector3(8, 0, 8);
+            return new Vector3(8, 1, 8);
         }
         else if (playerCount == 3)
         {
-            return new Vector3(8, 0, -8);
+            return new Vector3(8, 1, -8);
         }
         else
         {
-            return new Vector3(-8, 0, -8);
+            return new Vector3(-8, 1, -8);
         }
+    }
+
+    [Rpc(SendTo.NotServer)]
+    private void SyncSpawnCharacterEventRpc(ulong networkObjectId)
+    {
+        int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
+        int currentPlayerIndex = playerCount - 1;
+
+        spawnCharacterEvent?.Invoke(networkObjectId, currentPlayerIndex);
     }
 }

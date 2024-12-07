@@ -31,11 +31,9 @@ public class GameTimeCounterUI : NetworkBehaviour
 
             if (IsServer)
             {
-                SyncGameTimeRpc(remainingSecond);
-            }
-            else
-            {
                 remainingTimeText.text = $"{remainingSecond}";
+
+                SyncGameTimeRpc(remainingSecond);
             }
         }
     }
