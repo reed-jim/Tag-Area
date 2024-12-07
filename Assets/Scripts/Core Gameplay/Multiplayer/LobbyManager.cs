@@ -236,6 +236,8 @@ public class LobbyManager : MonoBehaviour
         };
 
         await LobbyService.Instance.UpdateLobbyAsync(_currentLobbyId, updateOptions);
+
+        Debug.Log("UpdateLobbyAsync");
     }
 
     private void HandleOnJoinCodeReceived(Dictionary<string, ChangedOrRemovedLobbyValue<DataObject>> data)

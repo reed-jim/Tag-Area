@@ -69,7 +69,6 @@ public class CharacterFactionManager : NetworkBehaviour
     [Rpc(SendTo.NotMe)]
     private void AssignMonsterRpc(ulong networkObjectId, CharacterFaction characterFaction)
     {
-        Debug.Log("SPAWNEEDD RRPPPC");
         changeCharacterFactionEvent?.Invoke(networkObjectId, characterFaction);
 
         _isMonsterExist = true;

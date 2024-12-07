@@ -36,6 +36,8 @@ public class GameTimeCounterUI : NetworkBehaviour
                 SyncGameTimeRpc(remainingSecond);
             }
         }
+
+        endGameEvent?.Invoke();
     }
 
     [Rpc(SendTo.NotServer)]

@@ -10,6 +10,6 @@ public class CharacterUI : NetworkBehaviour
     {
         base.OnNetworkSpawn();
 
-        nameText.text = $"{GetComponent<NetworkObject>().NetworkObjectId}";
+        nameText.text = $"Player {GetComponent<NetworkObject>().NetworkObjectId}";
     }
 }

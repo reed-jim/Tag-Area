@@ -57,26 +57,6 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         _currentJoinCode = joinCode;
     }
 
-    public async void GenerateJoinCode(string lobbyId, int maxConnections = 5)
-    {
-        await UnityServices.InitializeAsync();
-
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
-
-        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxConnections);
-
-        networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "dtls"));
-
-        string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-
-        lobbyIdWithJoinCodeDictionary.Add(lobbyId, joinCode);
-
-        setJoinCodeEvent?.Invoke(lobbyId, joinCode);
-    }
-
     public async void StartHostWithRelay(string lobbyId, int maxConnections = 5)
     {
         await UnityServices.InitializeAsync();

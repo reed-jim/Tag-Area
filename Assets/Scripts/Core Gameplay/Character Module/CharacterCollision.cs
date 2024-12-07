@@ -23,6 +23,13 @@ public class CharacterCollision : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        IBooster booster = other.GetComponent<IBooster>();
+
+        if (booster != null)
+        {
+            booster.Boost(_networkObjectId);
+        }
+
         if (characterFactionObserver.CharacterFaction == CharacterFaction.Human)
         {
             return;
@@ -40,12 +47,6 @@ public class CharacterCollision : NetworkBehaviour
                     CharacterFaction.Human,
                     CharacterFaction.Monster
                 );
-
-                // otherCharacterFactionObserver.CharacterFaction = CharacterFaction.Monster;
-                // characterFactionObserver.CharacterFaction = CharacterFaction.Human;
-
-                // changeCharacterFactionEvent?.Invoke(otherCharacterFactionObserver.GetComponent<NetworkObject>().NetworkObjectId, otherCharacterFactionObserver.CharacterFaction);
-                // changeCharacterFactionEvent?.Invoke(_networkObjectId, characterFactionObserver.CharacterFaction);
             }
         }
     }

@@ -115,6 +115,8 @@ GameObject:
   - component: {fileID: 1108822657105720325}
   - component: {fileID: 1545265395285993562}
   - component: {fileID: 1075313922824477065}
+  - component: {fileID: 1971429464912443928}
+  - component: {fileID: 978684521220394546}
   - component: {fileID: 8817911407752511319}
   - component: {fileID: 1364816200474424897}
   - component: {fileID: 4463865429473566599}
@@ -159,7 +161,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1841458843
+  GlobalObjectIdHash: 149501491
   InScenePlacedSourceGlobalObjectIdHash: 149501491
   DeferredDespawnTick: 0
   Ownership: 1
@@ -213,6 +215,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   nameText: {fileID: 8482967799242826509}
+--- !u!114 &1971429464912443928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146442563205983887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9eeddd7624f86084691608c83b4aab0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  characterFactionObserver: {fileID: 1108822657105720325}
+  isBotVariable: {fileID: 11400000, guid: 4386898af0d1d6e49bb1b876e5b93e47, type: 2}
+  radiusCheck: 10
+  layerMaskCheck:
+    serializedVersion: 2
+    m_Bits: 4294967295
+--- !u!114 &978684521220394546
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6146442563205983887}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba1e884bee3b2fe40a31628e6ed6742b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  fleeMultiplier: 1
+  lerpRatio: 0.1
 --- !u!114 &8817911407752511319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -242,7 +278,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  moveSpeed: 2
+  moveSpeed: 4
+  lerpRatio: 0.5
 --- !u!114 &4463865429473566599
 MonoBehaviour:
   m_ObjectHideFlags: 0

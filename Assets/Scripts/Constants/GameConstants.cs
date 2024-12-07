@@ -7,4 +7,8 @@ public static class GameConstants
     #region SCREEN ROUTE
     public static string LOBBY_DETAIL_ROUTE = "Lobby Detail";
     #endregion
+
+    #region POOLING
+    public static string BOOSTER = "Booster";
+    #endregion
 }
