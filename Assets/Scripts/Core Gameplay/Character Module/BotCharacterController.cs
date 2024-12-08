@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,6 +8,12 @@ public class BotCharacterController : NetworkBehaviour
     [SerializeField] private float lerpRatio;
 
     private ulong _networkObjectId;
+    private Vector3 _direction;
+    private bool _isTargetFound;
+
+    #region ACTION
+    public static event Action<ulong, Vector3> setBotCharacterDirectionEvent;
+    #endregion
 
     public override void OnNetworkSpawn()
     {
@@ -19,19 +26,31 @@ public class BotCharacterController : NetworkBehaviour
     {
         CharacterVision.chaseTargetEvent += ChaseTarget;
         CharacterVision.fleeTargetEvent += FleeTarget;
+        CharacterVision.setIsFoundTargetEvent += SetIsFoundTarget;
+    }
+
+    private void Update()
+    {
+        if (_isTargetFound)
+        {
+            setBotCharacterDirectionEvent?.Invoke(_networkObjectId, _direction);
+        }
     }
 
     public override void OnDestroy()
     {
         CharacterVision.chaseTargetEvent -= ChaseTarget;
         CharacterVision.fleeTargetEvent -= FleeTarget;
+        CharacterVision.setIsFoundTargetEvent -= SetIsFoundTarget;
     }
 
     private void ChaseTarget(ulong networkObjectId, Vector3 position)
     {
         if (networkObjectId == _networkObjectId && IsSpawned)
         {
-            ChaseTargetRpc(position);
+            _direction = (position - transform.position).normalized;
+
+            _direction.y = 0;
         }
     }
 
@@ -39,10 +58,19 @@ public class BotCharacterController : NetworkBehaviour
     {
         if (networkObjectId == _networkObjectId && IsSpawned)
         {
-            FleeTargetRpc(position);
+            _direction = (transform.position - position).normalized;
+
+            _direction.y = 0;
         }
     }
 
+    private void SetIsFoundTarget(ulong networkObjectId, bool isFound)
+    {
+        if (networkObjectId == _networkObjectId && IsSpawned)
+        {
+            _isTargetFound = isFound;
+        }
+    }
 
     [Rpc(SendTo.Server)]
     private void ChaseTargetRpc(Vector3 position)

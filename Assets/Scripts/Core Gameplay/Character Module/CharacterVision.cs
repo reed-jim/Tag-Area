@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -17,6 +18,7 @@ public class CharacterVision : NetworkBehaviour
     #region ACTION
     public static event Action<ulong, Vector3> chaseTargetEvent;
     public static event Action<ulong, Vector3> fleeTargetEvent;
+    public static event Action<ulong, bool> setIsFoundTargetEvent;
     #endregion
 
     private ulong _networkObjectId;
@@ -26,11 +28,36 @@ public class CharacterVision : NetworkBehaviour
         base.OnNetworkSpawn();
 
         _networkObjectId = GetComponent<NetworkObject>().NetworkObjectId;
+
+        DelayStartSeekingTargetAsync();
     }
 
-    private void Awake()
+    [Rpc(SendTo.NotMe)]
+    private void SeekTargetRPC(ulong networkObjectId)
     {
-        if (isBotVariable.Value)
+        StartSeekingTarget(networkObjectId);
+    }
+
+    private async void DelayStartSeekingTargetAsync()
+    {
+        while (!IsSpawned)
+        {
+            await Task.Delay(200);
+        }
+
+        await Task.Delay(1000);
+
+        if (IsOwner && isBotVariable.Value)
+        {
+            StartCoroutine(SeekingTarget());
+
+            SeekTargetRPC(_networkObjectId);
+        }
+    }
+
+    private void StartSeekingTarget(ulong networkObjectId)
+    {
+        if (networkObjectId == _networkObjectId)
         {
             StartCoroutine(SeekingTarget());
         }
@@ -46,6 +73,8 @@ public class CharacterVision : NetworkBehaviour
         {
             Collider[] colliders = Physics.OverlapSphere(transform.position, radiusCheck, layerMaskCheck);
 
+            bool isTargetFound = false;
+
             if (colliders != null)
             {
                 for (int i = 0; i < colliders.Length; i++)
@@ -58,6 +87,9 @@ public class CharacterVision : NetworkBehaviour
                             targetCharacterFactionObserver.CharacterFaction == CharacterFaction.Human)
                         {
                             chaseTargetEvent?.Invoke(_networkObjectId, colliders[i].transform.position);
+
+                            isTargetFound = true;
+
                             // ChaseTargetRpc(colliders[i].transform.position);
                         }
 
@@ -65,11 +97,16 @@ public class CharacterVision : NetworkBehaviour
                             targetCharacterFactionObserver.CharacterFaction == CharacterFaction.Monster)
                         {
                             fleeTargetEvent?.Invoke(_networkObjectId, colliders[i].transform.position);
+
+                            isTargetFound = true;
+
                             // FleeTargetRpc(colliders[i].transform.position);
                         }
                     }
                 }
             }
+
+            setIsFoundTargetEvent?.Invoke(_networkObjectId, isTargetFound);
 
             yield return waitForSeconds;
         }

@@ -20,19 +20,19 @@ public class CharacterMovement : NetworkBehaviour
         _networkObjectId = GetComponent<NetworkObject>().NetworkObjectId;
     }
 
-    void Awake()
-    {
-        SpeedBooster.boostSpeedEvent += BoostSpeed;
+    // void Awake()
+    // {
+    //     SpeedBooster.boostSpeedEvent += BoostSpeed;
 
-        rb = GetComponent<Rigidbody>();
+    //     rb = GetComponent<Rigidbody>();
 
-        _predictedPosition = transform.position;
-    }
+    //     _predictedPosition = transform.position;
+    // }
 
-    public override void OnDestroy()
-    {
-        SpeedBooster.boostSpeedEvent -= BoostSpeed;
-    }
+    // public override void OnDestroy()
+    // {
+    //     SpeedBooster.boostSpeedEvent -= BoostSpeed;
+    // }
 
     void Update()
     {

@@ -2405,7 +2405,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PresetAsset: {fileID: 0}
   m_PresetReference:
-    rid: 6485895034240237667
+    rid: 6485895034240237671
   m_Scenario:
     rid: -2
   m_IsScenarioSettingsFolded: 0
@@ -2415,7 +2415,7 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 6485895034240237667
+    - rid: 6485895034240237671
       type: {class: NetworkSimulatorPreset, ns: Unity.Multiplayer.Tools.NetworkSimulator.Runtime, asm: Unity.Multiplayer.Tools.NetworkSimulator.Runtime}
       data:
         <Name>k__BackingField: 'Mobile 2G [CDMA & GSM, ''00]'
@@ -3905,6 +3905,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvas: {fileID: 2055167251}
   canvasSize: {fileID: 11400000, guid: cff3c506c9f63d645a923fa57c7a07c1, type: 2}
+  isBotVariable: {fileID: 11400000, guid: 4386898af0d1d6e49bb1b876e5b93e47, type: 2}
 --- !u!1 &1594398617
 GameObject:
   m_ObjectHideFlags: 0

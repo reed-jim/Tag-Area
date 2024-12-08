@@ -459,7 +459,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1841458843
+  GlobalObjectIdHash: 149501491
   InScenePlacedSourceGlobalObjectIdHash: 149501491
   DeferredDespawnTick: 0
   Ownership: 1
@@ -544,7 +544,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   characterFactionObserver: {fileID: 1108822657105720325}
   isBotVariable: {fileID: 11400000, guid: 4386898af0d1d6e49bb1b876e5b93e47, type: 2}
-  radiusCheck: 10
+  radiusCheck: 12
   layerMaskCheck:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -562,7 +562,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   fleeMultiplier: 1
-  lerpRatio: 0.1
+  lerpRatio: 0.003
 --- !u!114 &8817911407752511319
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -594,8 +594,10 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   speedBoostTrail: {fileID: 355331635251351550}
   monsterTrail: {fileID: 7829260460123647682}
+  isBotVariable: {fileID: 11400000, guid: 4386898af0d1d6e49bb1b876e5b93e47, type: 2}
   moveSpeed: 7
-  interpolationFactor: 10
+  interpolationFactor: 16
+  _isBot: 0
 --- !u!114 &4463865429473566599
 MonoBehaviour:
   m_ObjectHideFlags: 0

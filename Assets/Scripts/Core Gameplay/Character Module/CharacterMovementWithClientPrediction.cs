@@ -7,6 +7,9 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     [SerializeField] private TrailRenderer speedBoostTrail;
     [SerializeField] private TrailRenderer monsterTrail;
 
+    [Header("SCRIPTABLE OBJECT")]
+    [SerializeField] private BoolVariable isBotVariable;
+
     [Header("CUSTOMIZE")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float interpolationFactor = 10f;
@@ -24,6 +27,8 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
     private bool _isMovable;
     private bool _isSpeedBoosting;
+
+    [SerializeField] private bool _isBot;
     #endregion
 
     public override void OnNetworkSpawn()
@@ -39,8 +44,10 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     private void Awake()
     {
         LevelSpawner.spawnCharacterEvent += EnableCharacterMovement;
+        CharacterFactionManager.changeCharacterFactionEvent += EnableMonsterTrail;
         CharacterCollision.changeCharacterFactionEvent += EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent += BoostSpeed;
+        BotCharacterController.setBotCharacterDirectionEvent += SetBotDirection;
 
         _currentMoveSpeed = moveSpeed;
     }
@@ -50,8 +57,10 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         base.OnDestroy();
 
         LevelSpawner.spawnCharacterEvent -= EnableCharacterMovement;
+        CharacterFactionManager.changeCharacterFactionEvent -= EnableMonsterTrail;
         CharacterCollision.changeCharacterFactionEvent -= EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent -= BoostSpeed;
+        BotCharacterController.setBotCharacterDirectionEvent -= SetBotDirection;
     }
 
     private void Update()
@@ -63,8 +72,12 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
         if (IsOwner)
         {
-            HandleMovementInput();
-            PredictMovement();
+            if (!isBotVariable.Value)
+            {
+                HandleMovementInput();
+                PredictMovement();
+            }
+
             transform.position = predictedPosition;
 
             if (Time.time - lastInputTime > 0.1f)
@@ -106,6 +119,14 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         }
     }
 
+    private void SetBotDirection(ulong networkObjectId, Vector3 direction)
+    {
+        if (networkObjectId == _networkObjectId)
+        {
+            predictedPosition = transform.position + direction * _currentMoveSpeed * Time.deltaTime;
+        }
+    }
+
     private void InterpolatePosition()
     {
         transform.position = Vector3.Lerp(transform.position, serverPosition, Time.deltaTime * interpolationFactor);
@@ -134,7 +155,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         }
     }
 
-    private async void BoostSpeed(ulong networkObjectId)
+    private async void BoostSpeed(ulong networkObjectId, float speedMultiplier, float duration)
     {
         if (networkObjectId != _networkObjectId)
         {
@@ -146,11 +167,11 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
             return;
         }
 
-        _currentMoveSpeed = 1.5f * moveSpeed;
+        _currentMoveSpeed = speedMultiplier * moveSpeed;
 
         speedBoostTrail.gameObject.SetActive(true);
 
-        await Task.Delay(5000);
+        await Task.Delay((int)(duration * 1000));
 
         _currentMoveSpeed = moveSpeed;
 

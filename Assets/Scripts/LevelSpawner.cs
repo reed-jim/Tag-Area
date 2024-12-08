@@ -64,12 +64,10 @@ public class LevelSpawner : NetworkBehaviour
 
                 cameraFollowCharacterEvent?.Invoke(playerObject.transform);
 
-
-
                 int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
                 int currentPlayerIndex = playerCount - 1;
 
-                spawnCharacterEvent?.Invoke(networkPlayerObject.NetworkObjectId, currentPlayerIndex);
+                spawnCharacterEvent?.Invoke(networkPlayerObject.NetworkObjectId, playerCount);
             }
         }
     }
@@ -122,7 +120,7 @@ public class LevelSpawner : NetworkBehaviour
         SpawnPlayer(clientId);
     }
 
-    [Rpc(SendTo.NotServer)]
+    [Rpc(SendTo.Everyone)]
     private void SyncSpawnCharacterEventRpc(ulong networkObjectId)
     {
         int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
