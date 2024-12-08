@@ -181,6 +181,8 @@ public class LobbyManager : MonoBehaviour
                 string joinCode = joinedLobby.Data["join_code"].Value;
 
                 setJoinCodeEvent?.Invoke(lobbyId, joinCode);
+
+                startClientEvent?.Invoke();
             }
         }
         catch (LobbyServiceException e)
@@ -189,32 +191,32 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    private async void JoinLobbyByIdAsync(string lobbyId, string joinCode)
-    {
-        try
-        {
-            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
+    // private async void JoinLobbyByIdAsync(string lobbyId, string joinCode)
+    // {
+    //     try
+    //     {
+    //         Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
 
-            OnLobbyJoined(_currentLobbyId, 4);
+    //         OnLobbyJoined(_currentLobbyId, 4);
 
-            QueryLobbyAsync();
+    //         QueryLobbyAsync();
 
-            // if (joinedLobby.Data != null)
-            // {
-            //     joinCode = joinedLobby.Data["join_code"].Value;
+    //         // if (joinedLobby.Data != null)
+    //         // {
+    //         //     joinCode = joinedLobby.Data["join_code"].Value;
 
-            //     startGameEvent?.Invoke(joinCode);
-            // }
+    //         //     startGameEvent?.Invoke(joinCode);
+    //         // }
 
-            var callbacks = new LobbyEventCallbacks();
+    //         var callbacks = new LobbyEventCallbacks();
 
-            callbacks.DataChanged += HandleOnJoinCodeReceived;
-        }
-        catch (LobbyServiceException e)
-        {
-            Debug.Log(e);
-        }
-    }
+    //         callbacks.DataChanged += HandleOnJoinCodeReceived;
+    //     }
+    //     catch (LobbyServiceException e)
+    //     {
+    //         Debug.Log(e);
+    //     }
+    // }
 
     private async Task JoinLobbyByCodeAysnc(string lobbyCode)
     {
@@ -256,7 +258,7 @@ public class LobbyManager : MonoBehaviour
         {
             if (bool.Parse(data["is_game_started"].Value.Value))
             {
-                startClientEvent?.Invoke();
+                // startClientEvent?.Invoke();
             }
         }
     }

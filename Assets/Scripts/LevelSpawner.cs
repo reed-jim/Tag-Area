@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelSpawner : NetworkBehaviour
 {
@@ -18,19 +19,36 @@ public class LevelSpawner : NetworkBehaviour
 
     private void Awake()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += HandleOnClientConnectedCallback;
+        // NetworkManager.Singleton.OnClientConnectedCallback += HandleOnClientConnectedCallback;
     }
 
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
 
-        SpawnPlayer();
+        if (IsServer)
+        {
+            SpawnPlayer();
+        }
+        else
+        {
+            Debug.Log(NetworkManager.Singleton.LocalClientId);
+            RequestSpawnCharacterRpc(NetworkManager.Singleton.LocalClientId);
+        }
     }
 
     private void HandleOnClientConnectedCallback(ulong clientId)
     {
         SpawnPlayer(clientId);
+    }
+
+    private void HandleSceneChanged(ulong clientId, string sceneName, SceneManager transitionType)
+    {
+        if (IsOwner)
+        {
+            Debug.Log($"Client {clientId} switched to scene {sceneName} using {transitionType}");
+            // Perform actions based on the scene change
+        }
     }
 
     private void SpawnPlayer()
@@ -90,6 +108,12 @@ public class LevelSpawner : NetworkBehaviour
         {
             return new Vector3(-8, 1, -8);
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    private void RequestSpawnCharacterRpc(ulong clientId)
+    {
+        SpawnPlayer(clientId);
     }
 
     [Rpc(SendTo.NotServer)]

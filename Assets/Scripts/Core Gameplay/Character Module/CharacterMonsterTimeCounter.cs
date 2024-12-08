@@ -41,7 +41,7 @@ public class CharacterMonsterTimeCounter : NetworkBehaviour
 
         int maxTime = gameConfiguration.MaxGameTime;
 
-        updateMonsterTimeEvent?.Invoke(_networkObjectId, _monsterTime);
+        updateMonsterTimeEvent?.Invoke(OwnerClientId, _monsterTime);
 
         while (timePassed < maxTime)
         {
@@ -51,7 +51,7 @@ public class CharacterMonsterTimeCounter : NetworkBehaviour
             {
                 _monsterTime++;
 
-                updateMonsterTimeEvent?.Invoke(_networkObjectId, _monsterTime);
+                updateMonsterTimeEvent?.Invoke(OwnerClientId, _monsterTime);
             }
 
             timePassed++;

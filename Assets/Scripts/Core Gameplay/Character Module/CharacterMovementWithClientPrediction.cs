@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class CharacterMovementWithClientPrediction : NetworkBehaviour
 {
-    [SerializeField] private TrailRenderer trail;
+    [SerializeField] private TrailRenderer speedBoostTrail;
+    [SerializeField] private TrailRenderer monsterTrail;
 
     [Header("CUSTOMIZE")]
     [SerializeField] private float moveSpeed = 5f;
@@ -15,6 +16,8 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
     private Vector3 predictedPosition;
     private Vector3 serverPosition;
+
+    private float _currentMoveSpeed;
 
     private float lastInputTime = 0f;
     private Vector3 inputDirection;
@@ -29,23 +32,28 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
         _networkObjectId = GetComponent<NetworkObject>().NetworkObjectId;
 
-        trail.gameObject.SetActive(false);
+        speedBoostTrail.gameObject.SetActive(false);
+        monsterTrail.gameObject.SetActive(false);
 
         DelayEnableMovementAsync();
     }
 
     private void Awake()
     {
+        CharacterCollision.changeCharacterFactionEvent += EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent += BoostSpeed;
 
         predictedPosition = transform.position;
         serverPosition = transform.position;
+
+        _currentMoveSpeed = moveSpeed;
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
 
+        CharacterCollision.changeCharacterFactionEvent -= EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent -= BoostSpeed;
     }
 
@@ -93,13 +101,38 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     {
         if (inputDirection != Vector3.zero)
         {
-            predictedPosition = transform.position + inputDirection * moveSpeed * Time.deltaTime;
+            predictedPosition = transform.position + inputDirection * _currentMoveSpeed * Time.deltaTime;
         }
     }
 
     private void InterpolatePosition()
     {
         transform.position = Vector3.Lerp(transform.position, serverPosition, Time.deltaTime * interpolationFactor);
+    }
+
+    private async void EnableMonsterTrail(ulong networkObjectId, CharacterFaction characterFaction)
+    {
+        if (networkObjectId != _networkObjectId)
+        {
+            return;
+        }
+
+        Debug.Log(networkObjectId + "/" + characterFaction);
+
+        if (characterFaction == CharacterFaction.Monster)
+        {
+            _currentMoveSpeed = 1.2f * moveSpeed;
+
+            monsterTrail.gameObject.SetActive(true);
+        }
+        else
+        {
+            _currentMoveSpeed = moveSpeed;
+
+            await Task.Delay((int)(monsterTrail.time * 1000));
+
+            monsterTrail.gameObject.SetActive(false);
+        }
     }
 
     private async void BoostSpeed(ulong networkObjectId)
@@ -114,19 +147,19 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
             return;
         }
 
-        moveSpeed *= 1.5f;
+        _currentMoveSpeed = 1.5f * moveSpeed;
 
-        trail.gameObject.SetActive(true);
+        speedBoostTrail.gameObject.SetActive(true);
 
         await Task.Delay(5000);
 
-        moveSpeed /= 1.5f;
+        _currentMoveSpeed = moveSpeed;
 
-        trail.emitting = false;
+        speedBoostTrail.emitting = false;
 
-        await Task.Delay((int)(trail.time * 1000));
+        await Task.Delay((int)(speedBoostTrail.time * 1000));
 
-        trail.gameObject.SetActive(false);
+        speedBoostTrail.gameObject.SetActive(false);
 
         _isSpeedBoosting = false;
     }
@@ -136,7 +169,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     {
         if (IsOwner)
         {
-            serverPosition = transform.position + inputDirection * moveSpeed * Time.deltaTime;
+            serverPosition = transform.position + inputDirection * _currentMoveSpeed * Time.deltaTime;
 
             UpdateServerPositionClientRpc(serverPosition);
         }
