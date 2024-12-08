@@ -70,6 +70,11 @@ public class BotCharacterController : NetworkBehaviour
         {
             _isTargetFound = isFound;
         }
+
+        if (!isFound)
+        {
+            setBotCharacterDirectionEvent?.Invoke(_networkObjectId, Vector3.zero);
+        }
     }
 
     [Rpc(SendTo.Server)]

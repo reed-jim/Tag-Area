@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class CharacterMovementWithClientPrediction : NetworkBehaviour
 {
+    [Header("TRAIL")]
     [SerializeField] private TrailRenderer speedBoostTrail;
     [SerializeField] private TrailRenderer monsterTrail;
 
@@ -12,25 +13,28 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
     [Header("CUSTOMIZE")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float interpolationFactor = 10f;
 
     #region PRIVATE FIELD
     private ulong _networkObjectId;
-
-    private Vector3 predictedPosition;
-    private Vector3 serverPosition;
-
-    private float _currentMoveSpeed;
-
-    private float lastInputTime = 0f;
     private Vector3 inputDirection;
 
+    private float _currentMoveSpeed;
     private bool _isMovable;
-    private bool _isSpeedBoosting;
 
+    private bool _isSpeedBoosting;
     [SerializeField] private bool _isBot;
+
+    #region CLIENT
+    private Vector3 _compensatedPosition;
+    private Vector3 _speed;
+    private Vector3 _lastSpeed;
+    private int _serverTickPassed;
+    private int _lastServerTickPassed;
+    private float _lastServerSyncTime;
+    #endregion
     #endregion
 
+    #region LIFE CYCLE
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -47,7 +51,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         CharacterFactionManager.changeCharacterFactionEvent += EnableMonsterTrail;
         CharacterCollision.changeCharacterFactionEvent += EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent += BoostSpeed;
-        BotCharacterController.setBotCharacterDirectionEvent += SetBotDirection;
+        BotCharacterController.setBotCharacterDirectionEvent += SetBotMovementDirection;
 
         _currentMoveSpeed = moveSpeed;
     }
@@ -60,7 +64,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         CharacterFactionManager.changeCharacterFactionEvent -= EnableMonsterTrail;
         CharacterCollision.changeCharacterFactionEvent -= EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent -= BoostSpeed;
-        BotCharacterController.setBotCharacterDirectionEvent -= SetBotDirection;
+        BotCharacterController.setBotCharacterDirectionEvent -= SetBotMovementDirection;
     }
 
     private void Update()
@@ -70,39 +74,99 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
             return;
         }
 
-        if (IsOwner)
+        if (IsServer)
         {
-            if (!isBotVariable.Value)
+            if (IsOwner)
             {
-                HandleMovementInput();
-                PredictMovement();
+                if (!_isBot)
+                {
+                    HandleMovementInput();
+                }
+
+                transform.position = transform.position + inputDirection * _currentMoveSpeed;
             }
-
-            transform.position = predictedPosition;
-
-            if (Time.time - lastInputTime > 0.1f)
+            else
             {
-                lastInputTime = Time.time;
-                SubmitMovementInputServerRpc(inputDirection);
+                if (_lastSpeed != _speed)
+                {
+                    _lastSpeed = _speed;
+                }
+                else
+                {
+                    if (_speed.magnitude > 0.1f)
+                    {
+                        _serverTickPassed++;
+                    }
+                }
+
+                transform.position = Vector3.Lerp(transform.position, _compensatedPosition, 0.333f);
+
+                // // simulating
+                // _compensatedPosition += _speed;
             }
         }
         else
         {
-            InterpolatePosition();
+            if (!_isBot)
+            {
+                HandleMovementInput();
+
+                _speed = inputDirection * _currentMoveSpeed; ;
+            }
+
+            if (Time.time - _lastServerSyncTime > 0.1f)
+            {
+                SyncClientSpeedRpc(_networkObjectId, _speed);
+
+                _lastServerSyncTime = Time.time;
+            }
+        }
+    }
+    #endregion
+
+    #region CLIENT
+    [Rpc(SendTo.Server)]
+    private void SyncClientSpeedRpc(ulong networkObjectId, Vector3 speed)
+    {
+        if (networkObjectId == _networkObjectId && !IsOwner)
+        {
+            CompensatePosition(speed);
+
+            _speed = speed;
         }
     }
 
-    private void EnableCharacterMovement(ulong networkObjectId, int currentPlayerIndex)
+    private void CompensatePosition(Vector3 speed)
+    {
+        int tickPassed = _serverTickPassed - _lastServerTickPassed;
+
+        _lastServerTickPassed = _serverTickPassed;
+
+        _compensatedPosition += speed * tickPassed;
+    }
+    #endregion
+
+    #region BOT
+    [Rpc(SendTo.NotMe)]
+    private void SyncIsBotRpc(ulong networkObjectId)
     {
         if (networkObjectId == _networkObjectId)
         {
-            predictedPosition = transform.position;
-            serverPosition = transform.position;
-
-            _isMovable = true;
+            _isBot = true;
         }
     }
 
+    private void SetBotMovementDirection(ulong networkObjectId, Vector3 direction)
+    {
+        if (networkObjectId == _networkObjectId)
+        {
+            _speed = direction * _currentMoveSpeed;
+        }
+    }
+    #endregion
+
+    // This will be moved to another module later
+    #region INPUT
     private void HandleMovementInput()
     {
         float horizontal = Input.GetAxis("Horizontal");
@@ -110,26 +174,24 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
         inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
     }
+    //
+    #endregion
 
-    private void PredictMovement()
-    {
-        if (inputDirection != Vector3.zero)
-        {
-            predictedPosition = transform.position + inputDirection * _currentMoveSpeed * Time.deltaTime;
-        }
-    }
-
-    private void SetBotDirection(ulong networkObjectId, Vector3 direction)
+    private void EnableCharacterMovement(ulong networkObjectId, int currentPlayerIndex)
     {
         if (networkObjectId == _networkObjectId)
         {
-            predictedPosition = transform.position + direction * _currentMoveSpeed * Time.deltaTime;
-        }
-    }
+            _compensatedPosition = transform.position;
 
-    private void InterpolatePosition()
-    {
-        transform.position = Vector3.Lerp(transform.position, serverPosition, Time.deltaTime * interpolationFactor);
+            _isBot = isBotVariable.Value;
+
+            if (_isBot)
+            {
+                SyncIsBotRpc(networkObjectId);
+            }
+
+            _isMovable = true;
+        }
     }
 
     private async void EnableMonsterTrail(ulong networkObjectId, CharacterFaction characterFaction)
@@ -188,25 +250,5 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         speedBoostTrail.emitting = true;
 
         _isSpeedBoosting = false;
-    }
-
-    [Rpc(SendTo.NotServer)]
-    private void SubmitMovementInputServerRpc(Vector3 inputDirection)
-    {
-        if (IsOwner)
-        {
-            serverPosition = transform.position + inputDirection * _currentMoveSpeed * Time.deltaTime;
-
-            UpdateServerPositionClientRpc(serverPosition);
-        }
-    }
-
-    [Rpc(SendTo.Server)]
-    private void UpdateServerPositionClientRpc(Vector3 newServerPosition)
-    {
-        if (!IsOwner)
-        {
-            serverPosition = newServerPosition;
-        }
     }
 }
