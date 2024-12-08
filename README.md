@@ -1,6 +1,10 @@
 # Tag Area
 
-This repository contains the source code for a Unity-based multiplayer game utilizing **Unity Netcode for GameObjects**, **Unity Relay**, **Unity Lobby** to provide a seamless online multiplayer experience.
+## Videos
+
+Game Lobby: https://www.youtube.com/watch?v=pxHWPfvYSac
+
+Gameplay: https://www.youtube.com/watch?v=g5rLptUtc40
 
 ## Requirements
 
