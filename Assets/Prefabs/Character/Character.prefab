@@ -498,6 +498,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
+  invincibleDuration: 2
+  _characterFaction: 0
 --- !u!114 &1545265395285993562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -512,6 +514,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   characterFactionObserver: {fileID: 1108822657105720325}
+  durationBetweenTwoCollisionWithCharacter: 0
 --- !u!114 &1075313922824477065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -591,7 +594,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   speedBoostTrail: {fileID: 355331635251351550}
   monsterTrail: {fileID: 7829260460123647682}
-  moveSpeed: 6
+  moveSpeed: 7
   interpolationFactor: 10
 --- !u!114 &4463865429473566599
 MonoBehaviour:

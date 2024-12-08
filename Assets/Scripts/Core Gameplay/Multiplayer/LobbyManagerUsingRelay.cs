@@ -21,6 +21,8 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
     #endregion
 
     #region ACTION
+    public static event Action hostStartedEvent;
+    public static event Action clientStartedEvent;
     public static event Action<string, string> setJoinCodeEvent;
     public static event Action toGameplayEvent;
     public static event Action<string> toSceneEvent;
@@ -33,8 +35,8 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         LobbyManager.setJoinCodeEvent += SetJoinCode;
         LobbyManager.startClientEvent += StartClientWithRelay;
 
-        // networkManager.OnServerStarted += OnHostStarted;
-        // networkManager.OnClientStarted += OnClientStarted;
+        networkManager.OnServerStarted += OnHostStarted;
+        networkManager.OnClientConnectedCallback += OnClientConnected;
 
         lobbyIdWithJoinCodeDictionary = new Dictionary<string, string>();
     }
@@ -48,8 +50,8 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         LobbyManager.setJoinCodeEvent -= SetJoinCode;
         LobbyManager.startClientEvent -= StartClientWithRelay;
 
-        // networkManager.OnServerStarted -= OnHostStarted;
-        // networkManager.OnClientStarted -= OnClientStarted;
+        networkManager.OnServerStarted -= OnHostStarted;
+        networkManager.OnClientConnectedCallback -= OnClientConnected;
     }
 
     private void SetJoinCode(string lobbyId, string joinCode)
@@ -102,17 +104,19 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         toGameplayEvent?.Invoke();
     }
 
-    // private void OnHostStarted()
-    // {
-    //     toSceneEvent?.Invoke(GameConstants.GAMEPLAY_SCENE);
+    private void OnHostStarted()
+    {
+        if (IsHost)
+        {
+            hostStartedEvent?.Invoke();
+        }
+    }
 
-    //     toGameplayEvent?.Invoke();
-    // }
-
-    // private void OnClientStarted()
-    // {
-    //     toSceneEvent?.Invoke(GameConstants.GAMEPLAY_SCENE);
-
-    //     // toGameplayEvent?.Invoke();
-    // }
+    private void OnClientConnected(ulong clientId)
+    {
+        if (!IsHost)
+        {
+            clientStartedEvent?.Invoke();
+        }
+    }
 }

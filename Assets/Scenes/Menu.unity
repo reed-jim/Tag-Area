@@ -192,7 +192,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 80}
+  m_SizeDelta: {x: 240, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &3839661
 MonoBehaviour:
@@ -2623,6 +2623,7 @@ MonoBehaviour:
   joinCodeText: {fileID: 118465419}
   numberPlayerText: {fileID: 1427549991}
   startGameButton: {fileID: 3839661}
+  startGameButtonText: {fileID: 1784539755}
 --- !u!114 &1310178063
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,7 +12,6 @@ public class CharacterCollision : NetworkBehaviour
 
     #region PRIVATE FIELD
     private ulong _networkObjectId;
-    private bool _isEnableCollisionWithCharacter = true;
     #endregion
 
     #region ACTION
@@ -40,21 +39,13 @@ public class CharacterCollision : NetworkBehaviour
             return;
         }
 
-        if (!_isEnableCollisionWithCharacter)
-        {
-            return;
-        }
-
         CharacterFactionObserver otherCharacterFactionObserver = other.GetComponent<CharacterFactionObserver>();
 
         if (otherCharacterFactionObserver != null)
         {
-            if (otherCharacterFactionObserver.CharacterFaction == CharacterFaction.Human)
+            if (otherCharacterFactionObserver.CharacterFaction == CharacterFaction.Human && !otherCharacterFactionObserver.IsInvincible)
             {
-                Debug.Log("COLLISON");
-
-                changeCharacterFactionEvent?.Invoke(otherCharacterFactionObserver.GetComponent<NetworkObject>().NetworkObjectId, CharacterFaction.Monster);
-                changeCharacterFactionEvent?.Invoke(_networkObjectId, CharacterFaction.Human);
+                characterFactionObserver.IsInvincible = true;
 
                 SyncCollisionRpc(
                     _networkObjectId,
@@ -62,22 +53,11 @@ public class CharacterCollision : NetworkBehaviour
                     CharacterFaction.Human,
                     CharacterFaction.Monster
                 );
-
-                _isEnableCollisionWithCharacter = false;
-
-                DelayEnableCollisionWithCharacterAsync();
             }
         }
     }
 
-    private async void DelayEnableCollisionWithCharacterAsync()
-    {
-        await Task.Delay((int)(durationBetweenTwoCollisionWithCharacter * 1000));
-
-        _isEnableCollisionWithCharacter = true;
-    }
-
-    [Rpc(SendTo.NotMe)]
+    [Rpc(SendTo.Everyone)]
     private void SyncCollisionRpc(ulong networkObjectId, ulong otherNetworkObjectId, CharacterFaction characterFaction, CharacterFaction otherCharacterFaction)
     {
         changeCharacterFactionEvent?.Invoke(otherNetworkObjectId, otherCharacterFaction);

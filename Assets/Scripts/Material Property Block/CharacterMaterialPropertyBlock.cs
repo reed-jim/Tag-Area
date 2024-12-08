@@ -36,8 +36,8 @@ public class CharacterMaterialPropertyBlock : NetworkBehaviour
     {
         base.OnDestroy();
 
-        CharacterFactionManager.changeCharacterFactionEvent += ColorEffectOnTag;
-        CharacterCollision.changeCharacterFactionEvent += ColorEffectOnTag;
+        CharacterFactionManager.changeCharacterFactionEvent -= ColorEffectOnTag;
+        CharacterCollision.changeCharacterFactionEvent -= ColorEffectOnTag;
     }
 
     private void Init()

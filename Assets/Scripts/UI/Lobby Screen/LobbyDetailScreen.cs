@@ -10,6 +10,7 @@ public class LobbyDetailScreen : UIScreen
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text numberPlayerText;
     [SerializeField] private Button startGameButton;
+    [SerializeField] private TMP_Text startGameButtonText;
 
     private string _lobbyId;
     private string _joinCode;
@@ -18,6 +19,16 @@ public class LobbyDetailScreen : UIScreen
     #region ACTION
     public static event Action startGameEvent;
     #endregion
+
+    protected override void MoreActionInAwake()
+    {
+        base.MoreActionInAwake();
+
+        startGameButton.image.color = GameConstants.ERROR_BACKGROUND;
+        startGameButtonText.color = GameConstants.ERROR_TEXT;
+
+        startGameButtonText.text = GameConstants.DISCONNECTED;
+    }
 
     protected override void RegisterMoreEvent()
     {
@@ -28,6 +39,8 @@ public class LobbyDetailScreen : UIScreen
         LobbyManager.updateNumberPlayerInLobbyEvent += UpdateNumberPlayerLobby;
         LobbyManager.updateLobbyRoomEvent += UpdateLobby;
         LobbyManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
+        LobbyManagerUsingRelay.hostStartedEvent += OnHostStarted;
+        LobbyManagerUsingRelay.clientStartedEvent += OnClientStarted;
 
         startGameButton.onClick.AddListener(StartGame);
     }
@@ -41,6 +54,8 @@ public class LobbyDetailScreen : UIScreen
         LobbyManager.updateNumberPlayerInLobbyEvent -= UpdateNumberPlayerLobby;
         LobbyManager.updateLobbyRoomEvent -= UpdateLobby;
         LobbyManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
+        LobbyManagerUsingRelay.hostStartedEvent -= OnHostStarted;
+        LobbyManagerUsingRelay.clientStartedEvent -= OnClientStarted;
     }
 
     private void UpdateLobby(Lobby lobby)
@@ -77,4 +92,28 @@ public class LobbyDetailScreen : UIScreen
     {
         startGameEvent?.Invoke();
     }
+
+    #region CALLBACK
+    private void OnHostStarted()
+    {
+        startGameButton.gameObject.SetActive(true);
+
+        startGameButton.image.color = GameConstants.PRIMARY_BACKGROUND;
+        startGameButtonText.color = GameConstants.PRIMARY_TEXT;
+
+        startGameButtonText.text = GameConstants.START_GAME;
+    }
+
+    private void OnClientStarted()
+    {
+        startGameButton.gameObject.SetActive(true);
+
+        startGameButton.interactable = false;
+
+        startGameButton.image.color = GameConstants.PRIMARY_BACKGROUND;
+        startGameButtonText.color = GameConstants.PRIMARY_TEXT;
+
+        startGameButtonText.text = GameConstants.CONNECTED;
+    }
+    #endregion
 }

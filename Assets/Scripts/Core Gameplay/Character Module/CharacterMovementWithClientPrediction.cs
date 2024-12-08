@@ -34,17 +34,13 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
         speedBoostTrail.gameObject.SetActive(false);
         monsterTrail.gameObject.SetActive(false);
-
-        DelayEnableMovementAsync();
     }
 
     private void Awake()
     {
+        LevelSpawner.spawnCharacterEvent += EnableCharacterMovement;
         CharacterCollision.changeCharacterFactionEvent += EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent += BoostSpeed;
-
-        predictedPosition = transform.position;
-        serverPosition = transform.position;
 
         _currentMoveSpeed = moveSpeed;
     }
@@ -53,6 +49,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     {
         base.OnDestroy();
 
+        LevelSpawner.spawnCharacterEvent -= EnableCharacterMovement;
         CharacterCollision.changeCharacterFactionEvent -= EnableMonsterTrail;
         SpeedBooster.boostSpeedEvent -= BoostSpeed;
     }
@@ -82,11 +79,15 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         }
     }
 
-    private async void DelayEnableMovementAsync()
+    private void EnableCharacterMovement(ulong networkObjectId, int currentPlayerIndex)
     {
-        await Task.Delay(3000);
+        if (networkObjectId == _networkObjectId)
+        {
+            predictedPosition = transform.position;
+            serverPosition = transform.position;
 
-        _isMovable = true;
+            _isMovable = true;
+        }
     }
 
     private void HandleMovementInput()
@@ -116,8 +117,6 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         {
             return;
         }
-
-        Debug.Log(networkObjectId + "/" + characterFaction);
 
         if (characterFaction == CharacterFaction.Monster)
         {

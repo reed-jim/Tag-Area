@@ -32,7 +32,6 @@ public class LevelSpawner : NetworkBehaviour
         }
         else
         {
-            Debug.Log(NetworkManager.Singleton.LocalClientId);
             RequestSpawnCharacterRpc(NetworkManager.Singleton.LocalClientId);
         }
     }
@@ -64,6 +63,13 @@ public class LevelSpawner : NetworkBehaviour
                 networkPlayerObject.Spawn();
 
                 cameraFollowCharacterEvent?.Invoke(playerObject.transform);
+
+
+
+                int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
+                int currentPlayerIndex = playerCount - 1;
+
+                spawnCharacterEvent?.Invoke(networkPlayerObject.NetworkObjectId, currentPlayerIndex);
             }
         }
     }
