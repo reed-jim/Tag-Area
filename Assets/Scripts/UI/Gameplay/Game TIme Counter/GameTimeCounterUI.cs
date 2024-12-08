@@ -8,6 +8,9 @@ public class GameTimeCounterUI : NetworkBehaviour
 {
     [SerializeField] private TMP_Text remainingTimeText;
 
+    [Header("SCRIPTABLE OBJECT")]
+    [SerializeField] private GameConfiguration gameConfiguration;
+
     #region ACTION
     public static event Action endGameEvent;
     #endregion
@@ -21,7 +24,7 @@ public class GameTimeCounterUI : NetworkBehaviour
     {
         WaitForSeconds waitOneSecond = new WaitForSeconds(1);
 
-        int remainingSecond = 120;
+        int remainingSecond = gameConfiguration.MaxGameTime;
 
         while (remainingSecond > 0)
         {

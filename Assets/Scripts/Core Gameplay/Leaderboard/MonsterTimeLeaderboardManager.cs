@@ -7,14 +7,17 @@ using UnityEngine;
 public class MonsterTimeLeaderboardManager : MonoBehaviour
 {
     private Dictionary<ulong, int> _playersMonsterTime;
+    CharacterMonsterTimeData[] _sortedCharacterMonsterTimesData;
 
     #region ACTION
     public static event Action<CharacterMonsterTimeData[]> updateMonsterTimeUIEvent;
+    public static event Action<CharacterMonsterTimeData> setGameResultEvent;
     #endregion
 
     private void Awake()
     {
         CharacterMonsterTimeCounter.updateMonsterTimeEvent += UpdateMonsterTime;
+        GameTimeCounterUI.endGameEvent += OnGameEnded;
 
         _playersMonsterTime = new Dictionary<ulong, int>();
     }
@@ -22,6 +25,7 @@ public class MonsterTimeLeaderboardManager : MonoBehaviour
     private void OnDestroy()
     {
         CharacterMonsterTimeCounter.updateMonsterTimeEvent -= UpdateMonsterTime;
+        GameTimeCounterUI.endGameEvent -= OnGameEnded;
     }
 
     private void UpdateMonsterTime(ulong networkObjectId, int time)
@@ -35,12 +39,19 @@ public class MonsterTimeLeaderboardManager : MonoBehaviour
             _playersMonsterTime[networkObjectId] = time;
         }
 
-        CharacterMonsterTimeData[] characterMonsterTimesData =
+        _sortedCharacterMonsterTimesData =
             _playersMonsterTime
                 .OrderBy(item => item.Value)
                 .Select(item => new CharacterMonsterTimeData(item.Key, item.Value))
                 .ToArray();
 
-        updateMonsterTimeUIEvent?.Invoke(characterMonsterTimesData);
+        updateMonsterTimeUIEvent?.Invoke(_sortedCharacterMonsterTimesData);
+    }
+
+    private void OnGameEnded()
+    {
+        setGameResultEvent?.Invoke(_sortedCharacterMonsterTimesData[0]);
+        
+        Debug.Log(_sortedCharacterMonsterTimesData[0].PlayerName + "/" + _sortedCharacterMonsterTimesData[0].MonsterTime);
     }
 }
