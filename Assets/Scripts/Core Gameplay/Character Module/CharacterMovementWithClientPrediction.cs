@@ -102,23 +102,26 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
                 transform.position = Vector3.Lerp(transform.position, _compensatedPosition, 0.333f);
 
                 // // simulating
-                // _compensatedPosition += _speed;
+                _compensatedPosition += _speed;
             }
         }
         else
         {
-            if (!_isBot)
+            if (IsOwner)
             {
-                HandleMovementInput();
+                if (!_isBot)
+                {
+                    HandleMovementInput();
 
-                _speed = inputDirection * _currentMoveSpeed;
-            }
+                    _speed = inputDirection * _currentMoveSpeed;
+                }
 
-            if (Time.time - _lastServerSyncTime > 0.1f)
-            {
-                SyncClientSpeedRpc(_networkObjectId, _speed);
+                if (Time.time - _lastServerSyncTime > 0.1f)
+                {
+                    SyncClientSpeedRpc(_networkObjectId, _speed);
 
-                _lastServerSyncTime = Time.time;
+                    _lastServerSyncTime = Time.time;
+                }
             }
         }
     }
@@ -128,7 +131,6 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void SyncClientSpeedRpc(ulong networkObjectId, Vector3 speed)
     {
-        Debug.Log("SYNC" + IsOwner);
         if (networkObjectId == _networkObjectId && !IsOwner)
         {
             CompensatePosition(speed);
@@ -145,7 +147,10 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
         _compensatedPosition += speed * tickPassed;
 
-        Debug.Log(speed + "/" + tickPassed);
+        if (tickPassed > 0)
+        {
+            Debug.Log(speed + "/" + tickPassed + "/" + _networkObjectId);
+        }
     }
     #endregion
 
