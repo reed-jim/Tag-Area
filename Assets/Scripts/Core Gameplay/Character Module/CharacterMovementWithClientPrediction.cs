@@ -93,7 +93,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
                 }
                 else
                 {
-                    if (_speed.magnitude > 0.1f)
+                    if (_speed != Vector3.zero)
                     {
                         _serverTickPassed++;
                     }
@@ -111,7 +111,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
             {
                 HandleMovementInput();
 
-                _speed = inputDirection * _currentMoveSpeed; ;
+                _speed = inputDirection * _currentMoveSpeed;
             }
 
             if (Time.time - _lastServerSyncTime > 0.1f)
@@ -128,6 +128,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void SyncClientSpeedRpc(ulong networkObjectId, Vector3 speed)
     {
+        Debug.Log("SYNC" + IsOwner);
         if (networkObjectId == _networkObjectId && !IsOwner)
         {
             CompensatePosition(speed);
@@ -143,6 +144,8 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         _lastServerTickPassed = _serverTickPassed;
 
         _compensatedPosition += speed * tickPassed;
+
+        Debug.Log(speed + "/" + tickPassed);
     }
     #endregion
 

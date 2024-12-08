@@ -1,8 +1,6 @@
 using System;
-using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class LevelSpawner : NetworkBehaviour
 {
@@ -17,11 +15,6 @@ public class LevelSpawner : NetworkBehaviour
     public static Action<Transform> cameraFollowCharacterEvent;
     #endregion
 
-    private void Awake()
-    {
-        // NetworkManager.Singleton.OnClientConnectedCallback += HandleOnClientConnectedCallback;
-    }
-
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -33,20 +26,6 @@ public class LevelSpawner : NetworkBehaviour
         else
         {
             RequestSpawnCharacterRpc(NetworkManager.Singleton.LocalClientId);
-        }
-    }
-
-    private void HandleOnClientConnectedCallback(ulong clientId)
-    {
-        SpawnPlayer(clientId);
-    }
-
-    private void HandleSceneChanged(ulong clientId, string sceneName, SceneManager transitionType)
-    {
-        if (IsOwner)
-        {
-            Debug.Log($"Client {clientId} switched to scene {sceneName} using {transitionType}");
-            // Perform actions based on the scene change
         }
     }
 
@@ -126,6 +105,6 @@ public class LevelSpawner : NetworkBehaviour
         int playerCount = NetworkManager.Singleton.ConnectedClients.Count;
         int currentPlayerIndex = playerCount - 1;
 
-        spawnCharacterEvent?.Invoke(networkObjectId, currentPlayerIndex);
+        spawnCharacterEvent?.Invoke(networkObjectId, playerCount);
     }
 }

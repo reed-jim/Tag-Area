@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
@@ -8,7 +9,7 @@ public class CharacterFactionManager : NetworkBehaviour
 {
     #region PRIVATE FIELD
     private bool _isMonsterExist;
-    private int _numberPlayerGotFaction;
+    private List<ulong> _characterNetworkObjectIds;
     #endregion
 
     #region ACTION
@@ -18,6 +19,10 @@ public class CharacterFactionManager : NetworkBehaviour
     private void Awake()
     {
         LevelSpawner.spawnCharacterEvent += SelectFactionForCharacter;
+
+        _characterNetworkObjectIds = new List<ulong>();
+
+        StartCoroutine(EnsureThereIsOneMonster());
     }
 
     public override void OnDestroy()
@@ -27,49 +32,43 @@ public class CharacterFactionManager : NetworkBehaviour
         LevelSpawner.spawnCharacterEvent -= SelectFactionForCharacter;
     }
 
+    private IEnumerator EnsureThereIsOneMonster()
+    {
+        WaitForSeconds waitForSeconds = new WaitForSeconds(0.2f);
+
+        while (!_isMonsterExist)
+        {
+            foreach (var id in _characterNetworkObjectIds)
+            {
+                int random = UnityEngine.Random.Range(0, 4);
+
+                if (random == 1)
+                {
+                    AssignMonsterRpc(id, CharacterFaction.Monster);
+
+                    _isMonsterExist = true;
+
+                    break;
+                }
+            }
+
+            yield return waitForSeconds;
+        }
+    }
+
     private async void SelectFactionForCharacter(ulong networkObjectId, int playerCount)
     {
-        if (!IsServer)
-        {
-            return;
-        }
-
         while (!IsSpawned)
         {
             await Task.Delay(200);
         }
 
-        Debug.Log("FACTIONA " + playerCount + "/" + _numberPlayerGotFaction + "/" + _isMonsterExist);
-
-        if (!_isMonsterExist)
+        if (!IsServer)
         {
-            int random = UnityEngine.Random.Range(0, 999);
-
-            if (_numberPlayerGotFaction == playerCount - 1)
-            {
-                // AssignMonster(networkObjectId);
-
-                AssignMonsterRpc(networkObjectId, CharacterFaction.Monster);
-            }
-            else
-            {
-                if (random == 1)
-                {
-                    // AssignMonster(networkObjectId);
-
-                    AssignMonsterRpc(networkObjectId, CharacterFaction.Monster);
-                }
-            }
+            return;
         }
 
-        _numberPlayerGotFaction++;
-    }
-
-    private void AssignMonster(ulong networkObjectId)
-    {
-        changeCharacterFactionEvent?.Invoke(networkObjectId, CharacterFaction.Monster);
-
-        _isMonsterExist = true;
+        _characterNetworkObjectIds.Add(networkObjectId);
     }
 
     [Rpc(SendTo.Everyone)]
