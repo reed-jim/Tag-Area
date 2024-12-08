@@ -45,6 +45,12 @@ public class CharacterCollision : NetworkBehaviour
         {
             if (otherCharacterFactionObserver.CharacterFaction == CharacterFaction.Human && !otherCharacterFactionObserver.IsInvincible)
             {
+                GameObject tapSound = ObjectPoolingEverything.GetFromPool(GameConstants.TAG_SOUND);
+
+                tapSound.SetActive(true);
+
+                tapSound.GetComponent<AudioSource>().Play();
+
                 SyncCollisionRpc(
                     _networkObjectId,
                     otherCharacterFactionObserver.GetComponent<NetworkObject>().NetworkObjectId,

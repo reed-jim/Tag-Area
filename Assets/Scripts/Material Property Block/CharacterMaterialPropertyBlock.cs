@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using PrimeTween;
+using Saferio.Util.SaferioTween;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -74,22 +75,22 @@ public class CharacterMaterialPropertyBlock : NetworkBehaviour
             return;
         }
 
-        Color startColor;
-        Color endColor;
-
-        if (characterFaction == CharacterFaction.Monster)
-        {
-            startColor = Color.white;
-            endColor = Color.red;
-        }
-        else
-        {
-            startColor = Color.red;
-            endColor = Color.white;
-        }
-
         if (networkObjectId == _networkObjectId)
         {
+            Color startColor;
+            Color endColor;
+
+            if (characterFaction == CharacterFaction.Monster)
+            {
+                startColor = Color.white;
+                endColor = Color.red;
+            }
+            else
+            {
+                startColor = Color.red;
+                endColor = Color.white;
+            }
+
             float hdrIntensity = 1;
 
             Tween.Custom(startColor, endColor, duration: transitionDuration, onValueChange: newVal => SetColor(hdrIntensity * newVal))

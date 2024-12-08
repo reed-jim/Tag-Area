@@ -21,21 +21,17 @@ public class LobbyManager : MonoBehaviour
     public static event Action<string> setLobbyId;
     public static event Action<string, string> setJoinCodeEvent;
     public static event Action<ScreenRoute> switchRouteEvent;
-    public static event Action<string> startGameEvent;
     public static event Action<string, int> lobbyCreatedEvent;
     public static event Action<Lobby[]> fetchLobbiesDataEvent;
-
-    public static event Action<string, int> updateNumberPlayerInLobbyEvent;
-
     public static event Action startClientEvent;
     #endregion
 
+    #region LIFE CYCLE
     private void Awake()
     {
         LobbyRoomScrollViewItem.joinLobbyEvent += JoinLobbyByIdAsync;
         LobbyScreen.refreshLobbyListEvent += QueryLobbyAsync;
-        LobbyManagerUsingRelay.setJoinCodeEvent += SendJoinCodeAcrossLobby;
-        LobbyManagerUsingRelay.toGameplayEvent += SetGameStartedForLobby;
+        NetcodeManagerUsingRelay.setJoinCodeEvent += SendJoinCodeAcrossLobby;
 
         Init();
 
@@ -46,23 +42,9 @@ public class LobbyManager : MonoBehaviour
     {
         LobbyRoomScrollViewItem.joinLobbyEvent -= JoinLobbyByIdAsync;
         LobbyScreen.refreshLobbyListEvent -= QueryLobbyAsync;
-        LobbyManagerUsingRelay.setJoinCodeEvent -= SendJoinCodeAcrossLobby;
-        LobbyManagerUsingRelay.toGameplayEvent -= SetGameStartedForLobby;
+        NetcodeManagerUsingRelay.setJoinCodeEvent -= SendJoinCodeAcrossLobby;
     }
-
-    public string GenerateString(int length = 10, string chars = "abcdefghijklmnopqrstuvwxyz")
-    {
-        char[] stringChars = new char[length];
-        System.Random random = new System.Random();
-
-        for (int i = 0; i < length; i++)
-        {
-            int index = random.Next(chars.Length);
-            stringChars[i] = chars[index];
-        }
-
-        return new string(stringChars);
-    }
+    #endregion
 
     private async void Init()
     {
@@ -71,24 +53,44 @@ public class LobbyManager : MonoBehaviour
         Authenticate();
     }
 
-    private async Task InitializeLobbyAPI()
-    {
-        await UnityServices.InitializeAsync();
-    }
-
     private async void Authenticate()
     {
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
-    private void SubscribeLobbyEvent()
+    #region CALLBACK
+    private void OnLobbyCreated(string lobbyId, int maxConnections)
     {
-        var callbacks = new LobbyEventCallbacks();
+        switchRouteEvent?.Invoke(ScreenRoute.LobbyRoom);
 
-        callbacks.PlayerJoined += OnPlayerJoinedLobby;
-        callbacks.DataChanged += HandleOnLobbyDataChanged;
+        lobbyCreatedEvent?.Invoke(lobbyId, maxConnections);
+    }
 
-        Lobbies.Instance.SubscribeToLobbyEventsAsync(_currentLobbyId, callbacks);
+    private void OnLobbyJoined(string lobbyId, int maxConnections)
+    {
+        switchRouteEvent?.Invoke(ScreenRoute.LobbyRoom);
+    }
+
+    private void OnPlayerJoinedLobby(List<LobbyPlayerJoined> lobbyPlayerJoineds)
+    {
+        QueryLobbyAsync();
+    }
+
+    private void HandleOnJoinCodeReceived(Dictionary<string, ChangedOrRemovedLobbyValue<DataObject>> data)
+    {
+        if (data.ContainsKey("join_code"))
+        {
+            string joinCode = data["join_code"].Value.Value;
+
+            setJoinCodeEvent?.Invoke(_currentLobbyId, joinCode);
+        }
+    }
+    #endregion
+
+    #region LOBBY
+    private async Task InitializeLobbyAPI()
+    {
+        await UnityServices.InitializeAsync();
     }
 
     public async void CreatePublicLobbyAsync()
@@ -116,27 +118,6 @@ public class LobbyManager : MonoBehaviour
 
         OnLobbyCreated(_currentLobbyId, maxPlayers);
     }
-
-    #region CALLBACK
-    private void OnLobbyCreated(string lobbyId, int maxConnections)
-    {
-        switchRouteEvent?.Invoke(ScreenRoute.LobbyRoom);
-
-        lobbyCreatedEvent?.Invoke(lobbyId, maxConnections);
-    }
-
-    private void OnLobbyJoined(string lobbyId, int maxConnections)
-    {
-        switchRouteEvent?.Invoke(ScreenRoute.LobbyRoom);
-    }
-
-    private void OnPlayerJoinedLobby(List<LobbyPlayerJoined> lobbyPlayerJoineds)
-    {
-        QueryLobbyAsync();
-
-        // updateNumberPlayerInLobbyEvent?.Invoke(_currentLobbyId, lobbyPlayerJoineds.Count);
-    }
-    #endregion
 
     private async void QueryLobbyAsync()
     {
@@ -191,33 +172,6 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    // private async void JoinLobbyByIdAsync(string lobbyId, string joinCode)
-    // {
-    //     try
-    //     {
-    //         Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId);
-
-    //         OnLobbyJoined(_currentLobbyId, 4);
-
-    //         QueryLobbyAsync();
-
-    //         // if (joinedLobby.Data != null)
-    //         // {
-    //         //     joinCode = joinedLobby.Data["join_code"].Value;
-
-    //         //     startGameEvent?.Invoke(joinCode);
-    //         // }
-
-    //         var callbacks = new LobbyEventCallbacks();
-
-    //         callbacks.DataChanged += HandleOnJoinCodeReceived;
-    //     }
-    //     catch (LobbyServiceException e)
-    //     {
-    //         Debug.Log(e);
-    //     }
-    // }
-
     private async Task JoinLobbyByCodeAysnc(string lobbyCode)
     {
         try
@@ -242,26 +196,15 @@ public class LobbyManager : MonoBehaviour
         Debug.Log("UpdateLobbyAsync");
     }
 
-    private void HandleOnJoinCodeReceived(Dictionary<string, ChangedOrRemovedLobbyValue<DataObject>> data)
+    private void SubscribeLobbyEvent()
     {
-        if (data.ContainsKey("join_code"))
-        {
-            string joinCode = data["join_code"].Value.Value;
+        var callbacks = new LobbyEventCallbacks();
 
-            setJoinCodeEvent?.Invoke(_currentLobbyId, joinCode);
-        }
-    }
+        callbacks.PlayerJoined += OnPlayerJoinedLobby;
 
-    private void HandleOnLobbyDataChanged(Dictionary<string, ChangedOrRemovedLobbyValue<DataObject>> data)
-    {
-        if (data.ContainsKey("is_game_started"))
-        {
-            if (bool.Parse(data["is_game_started"].Value.Value))
-            {
-                // startClientEvent?.Invoke();
-            }
-        }
+        Lobbies.Instance.SubscribeToLobbyEventsAsync(_currentLobbyId, callbacks);
     }
+    #endregion
 
     #region UPDATE
     private void SendJoinCodeAcrossLobby(string lobbyId, string joinCode)
@@ -278,20 +221,21 @@ public class LobbyManager : MonoBehaviour
 
         UpdateLobbyAsync(data);
     }
-
-    private void SetGameStartedForLobby()
-    {
-        Dictionary<string, DataObject> data = new Dictionary<string, DataObject>
-        {
-            {
-                "is_game_started",
-                new DataObject(
-                visibility: DataObject.VisibilityOptions.Public,
-                value: "true")
-            }
-        };
-
-        UpdateLobbyAsync(data);
-    }
     #endregion
+
+    #region UTIL
+    public string GenerateString(int length = 10, string chars = "abcdefghijklmnopqrstuvwxyz")
+    {
+        char[] stringChars = new char[length];
+        System.Random random = new System.Random();
+
+        for (int i = 0; i < length; i++)
+        {
+            int index = random.Next(chars.Length);
+            stringChars[i] = chars[index];
+        }
+
+        return new string(stringChars);
+    }
+    #endregion  
 }

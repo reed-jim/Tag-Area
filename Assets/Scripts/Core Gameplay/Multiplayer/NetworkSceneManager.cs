@@ -7,7 +7,7 @@ public class NetworkSceneManager : NetworkBehaviour
     private void Awake()
     {
         GameNetcodeManager.toSceneEvent += ToScene;
-        LobbyManagerUsingRelay.toSceneEvent += ToScene;
+        LobbyDetailScreen.toSceneEvent += ToScene;
         MonsterTimeLeaderboardUI.toSceneEvent += ToScene;
     }
 
@@ -16,7 +16,7 @@ public class NetworkSceneManager : NetworkBehaviour
         base.OnDestroy();
 
         GameNetcodeManager.toSceneEvent -= ToScene;
-        LobbyManagerUsingRelay.toSceneEvent -= ToScene;
+        LobbyDetailScreen.toSceneEvent -= ToScene;
         MonsterTimeLeaderboardUI.toSceneEvent -= ToScene;
     }
 

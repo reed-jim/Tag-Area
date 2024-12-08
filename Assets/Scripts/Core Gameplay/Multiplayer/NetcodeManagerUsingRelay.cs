@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -10,13 +9,12 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-public class LobbyManagerUsingRelay : NetworkBehaviour
+public class NetcodeManagerUsingRelay : NetworkBehaviour
 {
     [SerializeField] private NetworkManager networkManager;
 
     #region PRIVATE FIELD
     private Dictionary<string, string> lobbyIdWithJoinCodeDictionary;
-    private string _currentLobbyId;
     private string _currentJoinCode;
     #endregion
 
@@ -26,12 +24,11 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
     public static event Action<ulong> setClientIdEvent;
     public static event Action<string, string> setJoinCodeEvent;
     public static event Action toGameplayEvent;
-    public static event Action<string> toSceneEvent;
     #endregion
 
+    #region LIFE CYCLE
     private void Awake()
     {
-        LobbyDetailScreen.startGameEvent += StartGame;
         LobbyManager.lobbyCreatedEvent += StartHostWithRelay;
         LobbyManager.setJoinCodeEvent += SetJoinCode;
         LobbyManager.startClientEvent += StartClientWithRelay;
@@ -47,7 +44,6 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
     {
         base.OnDestroy();
 
-        LobbyDetailScreen.startGameEvent -= StartGame;
         LobbyManager.lobbyCreatedEvent -= StartHostWithRelay;
         LobbyManager.setJoinCodeEvent -= SetJoinCode;
         LobbyManager.startClientEvent -= StartClientWithRelay;
@@ -56,11 +52,7 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         networkManager.OnClientStarted -= OnClientStarted;
         networkManager.OnClientConnectedCallback -= OnClientConnected;
     }
-
-    private void SetJoinCode(string lobbyId, string joinCode)
-    {
-        _currentJoinCode = joinCode;
-    }
+    #endregion
 
     public async void StartHostWithRelay(string lobbyId, int maxConnections = 5)
     {
@@ -100,13 +92,18 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         networkManager.StartClient();
     }
 
-    private void StartGame()
+    // SHOULD USE THIS, FINISH LATER
+    public async void StartClientWithRelay(string lobbyId)
     {
-        toSceneEvent?.Invoke(GameConstants.GAMEPLAY_SCENE);
-
-        toGameplayEvent?.Invoke();
+        string joinCode = lobbyIdWithJoinCodeDictionary[lobbyId];
     }
 
+    private void SetJoinCode(string lobbyId, string joinCode)
+    {
+        _currentJoinCode = joinCode;
+    }
+
+    #region CALLBACK
     private void OnHostStarted()
     {
         if (IsHost)
@@ -130,4 +127,5 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
             setClientIdEvent?.Invoke(clientId);
         }
     }
+    #endregion
 }

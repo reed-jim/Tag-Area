@@ -13,11 +13,13 @@ public class LobbyDetailScreen : UIScreen
     [SerializeField] private Button startGameButton;
     [SerializeField] private TMP_Text startGameButtonText;
 
+    #region PRIVATE FIELD
     private string _lobbyId;
     private string _joinCode;
+    #endregion
 
     #region ACTION
-    public static event Action startGameEvent;
+    public static event Action<string> toSceneEvent;
     #endregion
 
     #region LIFE CYCLE
@@ -40,12 +42,11 @@ public class LobbyDetailScreen : UIScreen
 
         LobbyManager.setLobbyId += SetLobbyId;
         LobbyManager.setJoinCodeEvent += SetJoinCode;
-        LobbyManager.updateNumberPlayerInLobbyEvent += UpdateNumberPlayerLobby;
         LobbyManager.updateLobbyRoomEvent += UpdateLobby;
-        LobbyManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
-        LobbyManagerUsingRelay.hostStartedEvent += OnHostStarted;
-        LobbyManagerUsingRelay.clientStartedEvent += OnClientStarted;
-        LobbyManagerUsingRelay.setClientIdEvent += SetClientId;
+        NetcodeManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
+        NetcodeManagerUsingRelay.hostStartedEvent += OnHostStarted;
+        NetcodeManagerUsingRelay.clientStartedEvent += OnClientStarted;
+        NetcodeManagerUsingRelay.setClientIdEvent += SetClientId;
 
         startGameButton.onClick.AddListener(StartGame);
     }
@@ -56,37 +57,17 @@ public class LobbyDetailScreen : UIScreen
 
         LobbyManager.setLobbyId -= SetLobbyId;
         LobbyManager.setJoinCodeEvent -= SetJoinCode;
-        LobbyManager.updateNumberPlayerInLobbyEvent -= UpdateNumberPlayerLobby;
         LobbyManager.updateLobbyRoomEvent -= UpdateLobby;
-        LobbyManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
-        LobbyManagerUsingRelay.hostStartedEvent -= OnHostStarted;
-        LobbyManagerUsingRelay.clientStartedEvent -= OnClientStarted;
-        LobbyManagerUsingRelay.setClientIdEvent -= SetClientId;
+        NetcodeManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
+        NetcodeManagerUsingRelay.hostStartedEvent -= OnHostStarted;
+        NetcodeManagerUsingRelay.clientStartedEvent -= OnClientStarted;
+        NetcodeManagerUsingRelay.setClientIdEvent -= SetClientId;
     }
     #endregion
 
     private void UpdateLobby(Lobby lobby)
     {
         UpdateNumberPlayerLobby(lobby.Id, lobby.Players.Count);
-    }
-
-    private void SetLobbyId(string lobbyId)
-    {
-        lobbyIdText.gameObject.SetActive(true);
-
-        lobbyIdText.text = $"Lobby Id: {lobbyId}";
-
-        _lobbyId = lobbyId;
-    }
-
-    private void SetJoinCode(string lobbyId, string joinCode)
-    {
-        if (lobbyId == _lobbyId)
-        {
-            _joinCode = joinCode;
-
-            joinCodeText.text = $"Join Code: {_joinCode}";
-        }
     }
 
     private void UpdateNumberPlayerLobby(string lobbyId, int numPlayer)
@@ -99,7 +80,7 @@ public class LobbyDetailScreen : UIScreen
 
     private void StartGame()
     {
-        startGameEvent?.Invoke();
+        toSceneEvent?.Invoke(GameConstants.GAMEPLAY_SCENE);
     }
 
     #region CALLBACK
@@ -130,6 +111,25 @@ public class LobbyDetailScreen : UIScreen
         clientIdText.gameObject.SetActive(true);
 
         clientIdText.text = $"Player {clientId}";
+    }
+
+    private void SetLobbyId(string lobbyId)
+    {
+        lobbyIdText.gameObject.SetActive(true);
+
+        lobbyIdText.text = $"Lobby Id: {lobbyId}";
+
+        _lobbyId = lobbyId;
+    }
+
+    private void SetJoinCode(string lobbyId, string joinCode)
+    {
+        if (lobbyId == _lobbyId)
+        {
+            _joinCode = joinCode;
+
+            joinCodeText.text = $"Join Code: {_joinCode}";
+        }
     }
     #endregion
 }

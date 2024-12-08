@@ -25,4 +25,8 @@ public static class GameConstants
     public static Color ERROR_BACKGROUND = new Color(90f / 255, 40f / 255, 40f / 255, 1);
     public static Color ERROR_TEXT = new Color(255f / 255, 140f / 255, 140f / 255, 1);
     #endregion
+
+    #region OBJECT POOLING
+    public static string TAG_SOUND = "Tag Sound";
+    #endregion
 }

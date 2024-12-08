@@ -11,15 +11,9 @@ public class LobbyScreen : UIScreen
 
     [SerializeField] private Button createRoomButton;
     [SerializeField] private Button refreshLobbyButton;
-
     [SerializeField] private ObjectPoolingScrollView lobbyRoomScrollView;
 
-    #region PRIVATE FIELD
-
-    #endregion
-
     #region ACTION
-    public static event Action<int, string> updateLobbyRoomEvent;
     public static event Action refreshLobbyListEvent;
     #endregion
 
