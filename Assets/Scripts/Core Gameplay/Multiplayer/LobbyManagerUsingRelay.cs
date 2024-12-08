@@ -23,6 +23,7 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
     #region ACTION
     public static event Action hostStartedEvent;
     public static event Action clientStartedEvent;
+    public static event Action<ulong> setClientIdEvent;
     public static event Action<string, string> setJoinCodeEvent;
     public static event Action toGameplayEvent;
     public static event Action<string> toSceneEvent;
@@ -36,6 +37,7 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         LobbyManager.startClientEvent += StartClientWithRelay;
 
         networkManager.OnServerStarted += OnHostStarted;
+        networkManager.OnClientStarted += OnClientStarted;
         networkManager.OnClientConnectedCallback += OnClientConnected;
 
         lobbyIdWithJoinCodeDictionary = new Dictionary<string, string>();
@@ -51,6 +53,7 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         LobbyManager.startClientEvent -= StartClientWithRelay;
 
         networkManager.OnServerStarted -= OnHostStarted;
+        networkManager.OnClientStarted -= OnClientStarted;
         networkManager.OnClientConnectedCallback -= OnClientConnected;
     }
 
@@ -112,11 +115,19 @@ public class LobbyManagerUsingRelay : NetworkBehaviour
         }
     }
 
-    private void OnClientConnected(ulong clientId)
+    private void OnClientStarted()
     {
         if (!IsHost)
         {
             clientStartedEvent?.Invoke();
+        }
+    }
+
+    private void OnClientConnected(ulong clientId)
+    {
+        if (clientId == networkManager.LocalClientId)
+        {
+            setClientIdEvent?.Invoke(clientId);
         }
     }
 }

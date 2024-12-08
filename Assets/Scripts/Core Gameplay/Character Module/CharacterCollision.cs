@@ -45,8 +45,6 @@ public class CharacterCollision : NetworkBehaviour
         {
             if (otherCharacterFactionObserver.CharacterFaction == CharacterFaction.Human && !otherCharacterFactionObserver.IsInvincible)
             {
-                characterFactionObserver.IsInvincible = true;
-
                 SyncCollisionRpc(
                     _networkObjectId,
                     otherCharacterFactionObserver.GetComponent<NetworkObject>().NetworkObjectId,

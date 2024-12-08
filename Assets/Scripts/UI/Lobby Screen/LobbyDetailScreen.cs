@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class LobbyDetailScreen : UIScreen
 {
+    [SerializeField] private TMP_Text clientIdText;
     [SerializeField] private TMP_Text lobbyIdText;
     [SerializeField] private TMP_Text joinCodeText;
     [SerializeField] private TMP_Text numberPlayerText;
@@ -14,12 +15,12 @@ public class LobbyDetailScreen : UIScreen
 
     private string _lobbyId;
     private string _joinCode;
-    private string _numberPlayerInLobby;
 
     #region ACTION
     public static event Action startGameEvent;
     #endregion
 
+    #region LIFE CYCLE
     protected override void MoreActionInAwake()
     {
         base.MoreActionInAwake();
@@ -28,6 +29,9 @@ public class LobbyDetailScreen : UIScreen
         startGameButtonText.color = GameConstants.ERROR_TEXT;
 
         startGameButtonText.text = GameConstants.DISCONNECTED;
+
+        clientIdText.gameObject.SetActive(false);
+        lobbyIdText.gameObject.SetActive(false);
     }
 
     protected override void RegisterMoreEvent()
@@ -41,6 +45,7 @@ public class LobbyDetailScreen : UIScreen
         LobbyManagerUsingRelay.setJoinCodeEvent += SetJoinCode;
         LobbyManagerUsingRelay.hostStartedEvent += OnHostStarted;
         LobbyManagerUsingRelay.clientStartedEvent += OnClientStarted;
+        LobbyManagerUsingRelay.setClientIdEvent += SetClientId;
 
         startGameButton.onClick.AddListener(StartGame);
     }
@@ -56,7 +61,9 @@ public class LobbyDetailScreen : UIScreen
         LobbyManagerUsingRelay.setJoinCodeEvent -= SetJoinCode;
         LobbyManagerUsingRelay.hostStartedEvent -= OnHostStarted;
         LobbyManagerUsingRelay.clientStartedEvent -= OnClientStarted;
+        LobbyManagerUsingRelay.setClientIdEvent -= SetClientId;
     }
+    #endregion
 
     private void UpdateLobby(Lobby lobby)
     {
@@ -65,9 +72,11 @@ public class LobbyDetailScreen : UIScreen
 
     private void SetLobbyId(string lobbyId)
     {
-        _lobbyId = lobbyId;
+        lobbyIdText.gameObject.SetActive(true);
 
-        lobbyIdText.text = $"Lobby Id: {_lobbyId}";
+        lobbyIdText.text = $"Lobby Id: {lobbyId}";
+
+        _lobbyId = lobbyId;
     }
 
     private void SetJoinCode(string lobbyId, string joinCode)
@@ -114,6 +123,13 @@ public class LobbyDetailScreen : UIScreen
         startGameButtonText.color = GameConstants.PRIMARY_TEXT;
 
         startGameButtonText.text = GameConstants.CONNECTED;
+    }
+
+    private void SetClientId(ulong clientId)
+    {
+        clientIdText.gameObject.SetActive(true);
+
+        clientIdText.text = $"Player {clientId}";
     }
     #endregion
 }
