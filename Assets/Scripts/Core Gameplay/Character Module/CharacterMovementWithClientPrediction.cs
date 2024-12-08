@@ -149,9 +149,13 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         {
             _currentMoveSpeed = moveSpeed;
 
+            monsterTrail.emitting = false;
+
             await Task.Delay((int)(monsterTrail.time * 1000));
 
             monsterTrail.gameObject.SetActive(false);
+
+            monsterTrail.emitting = true;
         }
     }
 
@@ -180,6 +184,8 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         await Task.Delay((int)(speedBoostTrail.time * 1000));
 
         speedBoostTrail.gameObject.SetActive(false);
+
+        speedBoostTrail.emitting = true;
 
         _isSpeedBoosting = false;
     }
