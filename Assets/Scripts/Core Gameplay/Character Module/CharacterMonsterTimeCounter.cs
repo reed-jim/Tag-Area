@@ -7,10 +7,13 @@ public class CharacterMonsterTimeCounter : NetworkBehaviour
 {
     [SerializeField] private CharacterFactionObserver characterFactionObserver;
 
-    [SerializeField] private int maxTime;
+    [Header("SCRIPTABLE OBJECT")]
+    [SerializeField] private GameConfiguration gameConfiguration;
 
+    #region PRIVATE FIELD
     private int _monsterTime;
     private ulong _networkObjectId;
+    #endregion
 
     #region ACTION
     public static event Action<ulong, int> updateMonsterTimeEvent;
@@ -35,6 +38,10 @@ public class CharacterMonsterTimeCounter : NetworkBehaviour
         int timePassed = 0;
 
         yield return new WaitUntil(() => IsSpawned);
+
+        int maxTime = gameConfiguration.MaxGameTime;
+
+        updateMonsterTimeEvent?.Invoke(_networkObjectId, _monsterTime);
 
         while (timePassed < maxTime)
         {

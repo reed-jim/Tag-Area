@@ -25,6 +25,6 @@ public class MonsterTimeLeaderboardItemUI : MonoBehaviour
     public void SetMonsterTime(int monsterTime)
     {
         timeText.text = $"{monsterTime}";
-        timeText.color = new Color((130 + monsterTime) / 255f, monsterTime / 255f, monsterTime / 255f, 1);
+        timeText.color = new Color((255 - monsterTime) / 255f, (130 - monsterTime) / 255f, (130 - monsterTime) / 255f, 1);
     }
 }

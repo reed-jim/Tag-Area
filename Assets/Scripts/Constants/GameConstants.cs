@@ -2,6 +2,7 @@ using UnityEngine;
 
 public static class GameConstants
 {
+    public static string MENU_SCENE = "Menu";
     public static string GAMEPLAY_SCENE = "Gameplay";
 
     #region SCREEN ROUTE

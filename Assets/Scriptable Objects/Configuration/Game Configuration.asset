@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bb9357b80ccccd4e92a80380133d8c1, type: 3}
   m_Name: Game Configuration
   m_EditorClassIdentifier: 
-  maxGameTime: 120
+  maxGameTime: 30

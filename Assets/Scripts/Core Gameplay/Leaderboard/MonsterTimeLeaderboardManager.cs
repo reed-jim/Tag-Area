@@ -51,7 +51,5 @@ public class MonsterTimeLeaderboardManager : MonoBehaviour
     private void OnGameEnded()
     {
         setGameResultEvent?.Invoke(_sortedCharacterMonsterTimesData[0]);
-        
-        Debug.Log(_sortedCharacterMonsterTimesData[0].PlayerName + "/" + _sortedCharacterMonsterTimesData[0].MonsterTime);
     }
 }

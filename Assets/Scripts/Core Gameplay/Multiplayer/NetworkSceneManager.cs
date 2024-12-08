@@ -8,6 +8,7 @@ public class NetworkSceneManager : NetworkBehaviour
     {
         GameNetcodeManager.toSceneEvent += ToScene;
         LobbyManagerUsingRelay.toSceneEvent += ToScene;
+        MonsterTimeLeaderboardUI.toSceneEvent += ToScene;
     }
 
     public override void OnDestroy()
@@ -16,6 +17,7 @@ public class NetworkSceneManager : NetworkBehaviour
 
         GameNetcodeManager.toSceneEvent -= ToScene;
         LobbyManagerUsingRelay.toSceneEvent -= ToScene;
+        MonsterTimeLeaderboardUI.toSceneEvent -= ToScene;
     }
 
     private void ToScene(string sceneName)

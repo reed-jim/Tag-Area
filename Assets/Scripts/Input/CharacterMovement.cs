@@ -53,13 +53,15 @@ public class CharacterMovement : NetworkBehaviour
 
             Vector3 velocity = new Vector3(moveX, 0, moveZ) * moveSpeed;
 
+            transform.position += velocity * Time.deltaTime;
+
             if (IsHost)
             {
-                rb.linearVelocity = velocity;
+                // rb.linearVelocity = velocity;
             }
             else
             {
-                SyncCharacterPositionRpc(velocity);
+                SyncCharacterPositionRpc(transform.position + velocity * Time.deltaTime);
             }
         }
     }
@@ -79,9 +81,9 @@ public class CharacterMovement : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    private void SyncCharacterPositionRpc(Vector3 velocity)
+    private void SyncCharacterPositionRpc(Vector3 predictedPosition)
     {
-        Vector3 predictedPosition = transform.position + velocity * Time.fixedDeltaTime;
+        // Vector3 predictedPosition = transform.position + velocity * Time.deltaTime;
 
         _predictedPosition = predictedPosition;
 
