@@ -1,6 +1,36 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
+
+public class MovementData
+{
+    private int _tick;
+    private Vector3 _speed;
+
+    public MovementData()
+    {
+
+    }
+
+    public MovementData(int tick, Vector3 speed)
+    {
+        _tick = tick;
+        _speed = speed;
+    }
+
+    public int Tick
+    {
+        get => _tick;
+        set => _tick = value;
+    }
+
+    public Vector3 Speed
+    {
+        get => _speed;
+        set => _speed = value;
+    }
+}
 
 public class CharacterMovementWithClientPrediction : NetworkBehaviour
 {
@@ -27,10 +57,17 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
     #region CLIENT
     private Vector3 _compensatedPosition;
     private Vector3 _speed;
-    private Vector3 _lastSpeed;
-    private int _serverTickPassed;
-    private int _lastServerTickPassed;
+    // private Vector3 _lastSpeed;
+    // private int _serverTickPassed;
+    // private int _lastServerTickPassed;
     private float _lastServerSyncTime;
+
+
+
+    private const int BUFFER_SIZE = 1024;
+    private MovementData[] movementDatum = new MovementData[BUFFER_SIZE];
+    private int _clientTickTime;
+    private int _lastClientTickTime;
     #endregion
     #endregion
 
@@ -54,6 +91,11 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         BotCharacterController.setBotCharacterDirectionEvent += SetBotMovementDirection;
 
         _currentMoveSpeed = moveSpeed;
+
+        for (int i = 0; i < movementDatum.Length; i++)
+        {
+            movementDatum[i] = new MovementData();
+        }
     }
 
     public override void OnDestroy()
@@ -87,22 +129,7 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
             }
             else
             {
-                if (_lastSpeed != _speed)
-                {
-                    _lastSpeed = _speed;
-                }
-                else
-                {
-                    if (_speed != Vector3.zero)
-                    {
-                        _serverTickPassed++;
-                    }
-                }
-
-                transform.position = Vector3.Lerp(transform.position, _compensatedPosition, 0.333f);
-
-                // // simulating
-                _compensatedPosition += _speed;
+                transform.position = Vector3.Lerp(transform.position, _compensatedPosition, 0.3333f);
             }
         }
         else
@@ -114,13 +141,27 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
                     HandleMovementInput();
 
                     _speed = inputDirection * _currentMoveSpeed;
+
+                    _clientTickTime++;
+
+                    movementDatum[_clientTickTime % BUFFER_SIZE] = new MovementData(_clientTickTime, _speed);
                 }
 
-                if (Time.time - _lastServerSyncTime > 0.1f)
+                if (Time.time - _lastServerSyncTime > 0.03f)
                 {
-                    SyncClientSpeedRpc(_networkObjectId, _speed);
+                    Vector3 predictedPosition = Vector3.zero;
+
+                    for (int i = _lastClientTickTime; i < _clientTickTime; i++)
+                    {
+                        int index = i % BUFFER_SIZE;
+
+                        predictedPosition += movementDatum[index].Speed;
+                    }
+
+                    SyncClientSpeedRpc(_networkObjectId, predictedPosition);
 
                     _lastServerSyncTime = Time.time;
+                    _lastClientTickTime = _clientTickTime;
                 }
             }
         }
@@ -129,23 +170,17 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
     #region CLIENT
     [Rpc(SendTo.Server)]
-    private void SyncClientSpeedRpc(ulong networkObjectId, Vector3 speed)
+    private void SyncClientSpeedRpc(ulong networkObjectId, Vector3 predictedPosition)
     {
         if (networkObjectId == _networkObjectId && !IsOwner)
         {
-            CompensatePosition(speed);
-
-            _speed = speed;
+            CompensatePosition(predictedPosition);
         }
     }
 
-    private void CompensatePosition(Vector3 speed)
+    private void CompensatePosition(Vector3 predictedPosition)
     {
-        int tickPassed = _serverTickPassed - _lastServerTickPassed;
-
-        _lastServerTickPassed = _serverTickPassed;
-
-        _compensatedPosition += speed * tickPassed;
+        _compensatedPosition += predictedPosition;
     }
     #endregion
 

@@ -595,9 +595,8 @@ MonoBehaviour:
   speedBoostTrail: {fileID: 355331635251351550}
   monsterTrail: {fileID: 7829260460123647682}
   isBotVariable: {fileID: 11400000, guid: 4386898af0d1d6e49bb1b876e5b93e47, type: 2}
-  moveSpeed: 0.03
-  _compensatedPosition: {x: 0, y: 0, z: 0}
-  _speed: {x: 0, y: 0, z: 0}
+  moveSpeed: 0.035
+  _isBot: 0
 --- !u!114 &4463865429473566599
 MonoBehaviour:
   m_ObjectHideFlags: 0
