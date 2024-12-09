@@ -142,6 +142,8 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
 
                     _speed = inputDirection * _currentMoveSpeed;
 
+                    transform.position = transform.position + inputDirection * _currentMoveSpeed;
+
                     _clientTickTime++;
 
                     movementDatum[_clientTickTime % BUFFER_SIZE] = new MovementData(_clientTickTime, _speed);
