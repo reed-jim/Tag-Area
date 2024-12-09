@@ -80,8 +80,6 @@ public class MonsterTimeLeaderboardUI : MonoBehaviour
             if (networkObject.IsSpawned && networkObject.NetworkManager.IsServer)
             {
                 networkObject.Despawn();
-
-                Debug.Log("Despawning network object: " + networkObject.name);
             }
         }
 

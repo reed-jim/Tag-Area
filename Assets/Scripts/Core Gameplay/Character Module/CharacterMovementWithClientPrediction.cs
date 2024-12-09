@@ -146,11 +146,6 @@ public class CharacterMovementWithClientPrediction : NetworkBehaviour
         _lastServerTickPassed = _serverTickPassed;
 
         _compensatedPosition += speed * tickPassed;
-
-        if (tickPassed > 0)
-        {
-            Debug.Log(speed + "/" + tickPassed + "/" + _networkObjectId);
-        }
     }
     #endregion
 
